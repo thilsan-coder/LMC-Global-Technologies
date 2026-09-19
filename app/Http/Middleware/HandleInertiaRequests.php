@@ -29,10 +29,30 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'designation' => $user->designation,
+                    'is_active' => $user->is_active,
+                    'roles' => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                ] : null,
+            ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
+            'brand' => [
+                'name' => 'LMC Global Technologies (Pvt) Ltd',
+                'short_name' => 'LMC',
+                'tagline' => 'Technology Beyond Boundaries',
             ],
         ];
     }
