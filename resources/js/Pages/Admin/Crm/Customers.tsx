@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AdminLayout from '@/layouts/AdminLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { CustomerItem } from '@/types';
 import {
     Users,

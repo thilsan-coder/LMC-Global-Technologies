@@ -5,11 +5,20 @@ namespace Tests\Feature;
 use App\Models\Intern;
 use App\Models\Review;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class LmcPlatformTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(DatabaseSeeder::class);
+    }
+
     public function test_public_corporate_pages_render_successfully(): void
     {
         $this->get('/')->assertStatus(200);
@@ -79,10 +88,10 @@ class LmcPlatformTest extends TestCase
     public function test_pdf_certificate_generation(): void
     {
         $intern = Intern::first();
-        if ($intern) {
-            $response = $this->get("/certificate/download/{$intern->verification_code}");
-            $response->assertStatus(200);
-            $response->assertHeader('content-type', 'application/pdf');
-        }
+        $this->assertNotNull($intern);
+
+        $response = $this->get("/certificate/download/{$intern->verification_code}");
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/pdf');
     }
 }

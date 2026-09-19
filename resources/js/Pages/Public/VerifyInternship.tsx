@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
-import PublicLayout from '@/layouts/PublicLayout';
+import PublicLayout from '@/Layouts/PublicLayout';
 import {
     ShieldCheck,
     XCircle,

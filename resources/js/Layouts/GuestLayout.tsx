@@ -1,4 +1,4 @@
-import LmcBrandLogo from '@/components/LmcBrandLogo';
+import LmcBrandLogo from '@/Components/LmcBrandLogo';
 import { Link } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 import { ShieldCheck, ArrowLeft } from 'lucide-react';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AdminLayout from '@/layouts/AdminLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { ServiceItem } from '@/types';
 import {
     Server,
@@ -75,16 +75,14 @@ export default function ServicesIndex({ services }: ServicesProps) {
         };
 
         if (editingService) {
-            put(route('admin.services.update', editingService.id), {
-                data: payload,
+            router.put(route('admin.services.update', editingService.id), payload, {
                 onSuccess: () => {
                     setModalOpen(false);
                     reset();
                 },
             });
         } else {
-            post(route('admin.services.store'), {
-                data: payload,
+            router.post(route('admin.services.store'), payload, {
                 onSuccess: () => {
                     setModalOpen(false);
                     reset();

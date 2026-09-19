@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import PublicLayout from '@/layouts/PublicLayout';
+import PublicLayout from '@/Layouts/PublicLayout';
 import { ServiceItem } from '@/types';
 import {
     Globe,

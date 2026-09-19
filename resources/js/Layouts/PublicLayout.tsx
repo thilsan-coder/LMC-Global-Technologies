@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import LmcBrandLogo from '@/components/LmcBrandLogo';
+import LmcBrandLogo from '@/Components/LmcBrandLogo';
 import { Toaster, toast } from 'sonner';
 import {
     Menu,

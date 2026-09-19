@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AdminLayout from '@/layouts/AdminLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { ProductItem } from '@/types';
 import {
     Layers,
@@ -64,16 +64,14 @@ export default function ProductsIndex({ products }: ProductsProps) {
         };
 
         if (editingProduct) {
-            put(route('admin.products.update', editingProduct.id), {
-                data: payload,
+            router.put(route('admin.products.update', editingProduct.id), payload, {
                 onSuccess: () => {
                     setModalOpen(false);
                     reset();
                 },
             });
         } else {
-            post(route('admin.products.store'), {
-                data: payload,
+            router.post(route('admin.products.store'), payload, {
                 onSuccess: () => {
                     setModalOpen(false);
                     reset();
