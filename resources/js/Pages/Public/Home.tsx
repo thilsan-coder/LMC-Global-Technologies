@@ -17,6 +17,10 @@ import {
     TrendingUp,
     ExternalLink,
     ChevronRight,
+    Sparkles,
+    Quote,
+    Info,
+    Layers,
 } from 'lucide-react';
 
 interface HomeProps {
@@ -41,92 +45,181 @@ export default function Home({ services, products, reviews, stats }: HomeProps) 
             <Head title="Enterprise Digital Solutions & Systems" />
 
             {/* Hero Section */}
-            <section className="relative bg-[#0B1C30] text-white overflow-hidden py-24 lg:py-32 border-b border-white/10">
-                {/* Abstract geometric background accents */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#DA7A31]/10 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
+            <section className="relative bg-[#0B1C30] text-white overflow-hidden py-14 sm:py-18 lg:py-24 border-b border-white/10">
+                {/* Abstract geometric ambient background glows */}
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#DA7A31]/15 blur-3xl pointer-events-none animate-lmc-float" />
+                <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-blue-600/15 blur-3xl pointer-events-none animate-lmc-float delay-300" />
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="max-w-3xl">
-                        {/* Tagline Badge */}
-                        <div className="inline-flex items-center gap-2 bg-[#132842] border border-[#DA7A31]/40 px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#DA7A31] mb-6">
-                            <span className="w-2 h-2 rounded-full bg-[#DA7A31] animate-pulse" />
-                            <span>LMC Global Technologies (Pvt) Ltd &bull; "Technology Beyond Boundaries"</span>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+                        {/* Left Column: Value Proposition & CTAs */}
+                        <div className="lg:col-span-7">
+                            {/* Tagline Badge */}
+                            <div className="inline-flex max-w-full flex-wrap items-center gap-2 bg-[#132842] border border-[#DA7A31]/40 px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#DA7A31] mb-5 reveal-on-scroll">
+                                <span className="w-2 h-2 rounded-full bg-[#DA7A31] animate-pulse shrink-0" />
+                                <span>LMC Global Technologies &bull; "Technology Beyond Boundaries"</span>
+                            </div>
+
+                            {/* Headline */}
+                            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold tracking-tight leading-[1.18] text-white reveal-on-scroll delay-100 break-words">
+                                Engineering Mission-Critical{' '}
+                                <span className="text-[#DA7A31]">Enterprise Software</span> & Cloud Infrastructure.
+                            </h1>
+
+                            {/* Subtitle */}
+                            <p className="mt-4 sm:mt-5 text-sm sm:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl reveal-on-scroll delay-200">
+                                LMC empowers global enterprises and growing organizations with resilient full-stack web
+                                architectures, robust ERP solutions, zero-trust cybersecurity, and accredited industrial
+                                engineering talent.
+                            </p>
+
+                            {/* CTAs */}
+                            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 reveal-on-scroll delay-300">
+                                <Link
+                                    href={route('public.services')}
+                                    className="lmc-btn lmc-btn-primary lmc-btn-lg justify-center text-center"
+                                >
+                                    <span>Explore Enterprise Services</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </Link>
+                                <Link
+                                    href={route('public.contact')}
+                                    className="lmc-btn lmc-btn-outline-white lmc-btn-lg justify-center text-center"
+                                >
+                                    <span>Schedule Consultation</span>
+                                </Link>
+                            </div>
+
+                            {/* Trust Signals */}
+                            <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center gap-y-2.5 gap-x-4 sm:gap-x-6 text-xs text-gray-400 font-medium reveal-on-scroll delay-400">
+                                <div className="flex items-center gap-2 text-gray-300">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                    <span>SOC-2 Ready Architecture</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-300">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                    <span>99.9% Uptime SLA</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-300">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                    <span>Cryptographic Audits</span>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Headline */}
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-white">
-                            Engineering Mission-Critical{' '}
-                            <span className="text-[#DA7A31]">Enterprise Software</span> & Cloud Infrastructure.
-                        </h1>
+                        {/* Right Column: Executive Architecture & Cloud Capabilities Showcase Card */}
+                        <div className="lg:col-span-5">
+                            <div className="lmc-dark-card rounded-2xl p-5 sm:p-7 border border-white/15 shadow-2xl relative overflow-hidden backdrop-blur-xl reveal-scale delay-200">
+                                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#DA7A31] to-transparent" />
 
-                        {/* Subtitle */}
-                        <p className="mt-6 text-lg sm:text-xl text-gray-300 font-normal leading-relaxed">
-                            LMC empowers global enterprises and growing organizations with resilient full-stack web
-                            architectures, robust ERP solutions, zero-trust cybersecurity, and accredited industrial
-                            engineering talent.
-                        </p>
+                                {/* Header with Live Operational Status */}
+                                <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-white/10 mb-5">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="relative flex h-2.5 w-2.5 shrink-0">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                        </span>
+                                        <span className="text-xs font-bold text-white tracking-wide uppercase">
+                                            Systems Operational
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] sm:text-[11px] font-mono font-semibold text-[#DA7A31] bg-[#132842] px-2.5 py-0.5 rounded border border-[#DA7A31]/30">
+                                        LMC Core Cloud 4.0
+                                    </span>
+                                </div>
 
-                        {/* CTAs */}
-                        <div className="mt-10 flex flex-wrap items-center gap-4">
-                            <Link
-                                href={route('public.services')}
-                                className="inline-flex items-center justify-center gap-2 bg-[#DA7A31] hover:bg-[#C2631D] text-white font-semibold text-base px-7 py-3.5 rounded shadow-lg transition duration-200"
-                            >
-                                <span>Explore Enterprise Services</span>
-                                <ArrowRight className="w-5 h-5" />
-                            </Link>
-                            <Link
-                                href={route('public.contact')}
-                                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-base px-6 py-3.5 rounded border border-white/20 transition duration-200"
-                            >
-                                <span>Schedule Consultation</span>
-                            </Link>
-                            <Link
-                                href={route('public.verify-internship')}
-                                className="inline-flex items-center gap-1.5 text-xs text-gray-300 hover:text-white underline underline-offset-4 py-2"
-                            >
-                                <ShieldCheck className="w-4 h-4 text-[#DA7A31]" />
-                                <span>Verify Certificate Record</span>
-                            </Link>
+                                {/* Core Capability Pillars */}
+                                <div className="space-y-3.5 mb-5">
+                                    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#071220]/70 border border-white/5 hover:border-[#DA7A31]/40 transition-colors">
+                                        <div className="w-9 h-9 rounded-lg bg-[#DA7A31]/15 text-[#DA7A31] flex items-center justify-center shrink-0 mt-0.5">
+                                            <Server className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs font-bold text-white">Full-Stack Cloud Systems</div>
+                                            <div className="text-[11px] text-gray-400 truncate mt-0.5">
+                                                Laravel &bull; React &bull; Microservices &bull; AWS Kubernetes
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#071220]/70 border border-white/5 hover:border-[#DA7A31]/40 transition-colors">
+                                        <div className="w-9 h-9 rounded-lg bg-[#DA7A31]/15 text-[#DA7A31] flex items-center justify-center shrink-0 mt-0.5">
+                                            <Layers className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs font-bold text-white">Proprietary Software Platforms</div>
+                                            <div className="text-[11px] text-gray-400 truncate mt-0.5">
+                                                Enterprise ERP &bull; CRM &bull; Multi-Cloud Billing
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#071220]/70 border border-white/5 hover:border-[#DA7A31]/40 transition-colors">
+                                        <div className="w-9 h-9 rounded-lg bg-[#DA7A31]/15 text-[#DA7A31] flex items-center justify-center shrink-0 mt-0.5">
+                                            <GraduationCap className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs font-bold text-white">Talent Accelerator & Audits</div>
+                                            <div className="text-[11px] text-gray-400 truncate mt-0.5">
+                                                Cryptographically Anchored Academic Credentials
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Quick Verification lookup link */}
+                                <div className="pt-3.5 border-t border-white/10 flex items-center justify-between text-xs">
+                                    <span className="text-gray-400 flex items-center gap-1.5">
+                                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                        <span>Digital Registry Online</span>
+                                    </span>
+                                    <Link
+                                        href={route('public.verify-internship')}
+                                        className="text-[#DA7A31] hover:text-white font-semibold flex items-center gap-1 hover:underline transition-colors"
+                                    >
+                                        <span>Verify ID</span>
+                                        <ArrowRight className="w-3 h-3" />
+                                    </Link>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Corporate Metrics Bar */}
-            <section className="bg-white border-b border-gray-200 shadow-xs">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
-                        <div className="text-center px-4">
-                            <div className="text-3xl sm:text-4xl font-extrabold text-[#0B1C30]">
+            <section className="bg-[#0B1C30]/80 border-b border-white/10 shadow-lg backdrop-blur-md">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+                        <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5 lg:bg-transparent lg:border-none lg:border-r lg:border-white/10 reveal-on-scroll delay-100">
+                            <div className="text-3xl sm:text-4xl font-extrabold text-white">
                                 {stats.total_clients}
                             </div>
-                            <div className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wider mt-1">
+                            <div className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider mt-1.5">
                                 Enterprise Clients
                             </div>
                         </div>
-                        <div className="text-center px-4 pt-4 sm:pt-0">
+                        <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5 lg:bg-transparent lg:border-none lg:border-r lg:border-white/10 reveal-on-scroll delay-200">
                             <div className="text-3xl sm:text-4xl font-extrabold text-[#DA7A31]">
                                 {stats.projects_delivered}
                             </div>
-                            <div className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wider mt-1">
+                            <div className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider mt-1.5">
                                 Systems Deployed
                             </div>
                         </div>
-                        <div className="text-center px-4 pt-4 sm:pt-0">
-                            <div className="text-3xl sm:text-4xl font-extrabold text-[#0B1C30]">
+                        <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5 lg:bg-transparent lg:border-none lg:border-r lg:border-white/10 reveal-on-scroll delay-300">
+                            <div className="text-3xl sm:text-4xl font-extrabold text-white">
                                 {stats.interns_trained}
                             </div>
-                            <div className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wider mt-1">
+                            <div className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider mt-1.5">
                                 Engineers Groomed
                             </div>
                         </div>
-                        <div className="text-center px-4 pt-4 sm:pt-0">
+                        <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5 lg:bg-transparent lg:border-none reveal-on-scroll delay-400">
                             <div className="text-3xl sm:text-4xl font-extrabold text-[#DA7A31]">
                                 {stats.client_satisfaction}
                             </div>
-                            <div className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wider mt-1">
+                            <div className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider mt-1.5">
                                 Client Satisfaction
                             </div>
                         </div>
@@ -135,137 +228,156 @@ export default function Home({ services, products, reviews, stats }: HomeProps) 
             </section>
 
             {/* Services Section */}
-            <section className="py-20 bg-[#F0F0F1]">
+            <section className="py-20 bg-[#071220] border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 reveal-on-scroll">
                         <div>
                             <div className="text-xs font-bold text-[#DA7A31] uppercase tracking-widest mb-2">
                                 Core Capabilities
                             </div>
-                            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1C30] tracking-tight">
+                            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                                 Enterprise Engineering Services
                             </h2>
                         </div>
                         <Link
                             href={route('public.services')}
-                            className="mt-4 md:mt-0 inline-flex items-center gap-1.5 text-sm font-semibold text-[#DA7A31] hover:text-[#C2631D]"
+                            className="mt-4 md:mt-0 lmc-btn lmc-btn-secondary lmc-btn-sm"
                         >
-                            <span>View all specialized solutions</span>
-                            <ArrowRight className="w-4 h-4" />
+                            <span>View All Specialized Solutions</span>
+                            <ArrowRight className="w-3.5 h-3.5 text-[#DA7A31]" />
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {services.map((service) => (
-                            <div
-                                key={service.id}
-                                className="bg-white rounded-md p-7 border border-gray-200 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
-                            >
-                                <div>
-                                    <div className="w-12 h-12 rounded-md bg-[#0B1C30]/5 flex items-center justify-center mb-5">
-                                        {iconMap[service.icon] || <Cpu className="w-6 h-6 text-[#DA7A31]" />}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                        {services.map((service, idx) => {
+                            const delayClass = idx === 0 ? 'delay-100' : idx === 1 ? 'delay-200' : 'delay-300';
+                            return (
+                                <div
+                                    key={service.id}
+                                    className={`lmc-dark-card p-7 flex flex-col justify-between group relative overflow-hidden reveal-on-scroll ${delayClass}`}
+                                >
+                                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#DA7A31] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div>
+                                        <div className="lmc-card-icon w-13 h-13 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-6 shadow-sm">
+                                            {iconMap[service.icon] || <Cpu className="w-6 h-6 text-[#DA7A31]" />}
+                                        </div>
+                                        <h3 className="text-xl font-bold text-white group-hover:text-[#DA7A31] transition-colors mb-2">
+                                            {service.name}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm text-gray-400 leading-relaxed mb-6">
+                                            {service.summary}
+                                        </p>
+                                        <div className="space-y-2 mb-6">
+                                            {service.features?.slice(0, 3).map((feat, fIdx) => (
+                                                <div
+                                                    key={fIdx}
+                                                    className="flex items-start gap-2.5 text-xs text-gray-300"
+                                                >
+                                                    <CheckCircle2 className="w-4 h-4 text-[#DA7A31] shrink-0 mt-0.5" />
+                                                    <span>{feat}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <h3 className="text-lg font-bold text-[#0B1C30] mb-2">{service.name}</h3>
-                                    <p className="text-xs sm:text-sm text-[#4D4B55] leading-relaxed mb-5">
-                                        {service.summary}
-                                    </p>
-                                    <div className="space-y-1.5 mb-6">
-                                        {service.features?.slice(0, 3).map((feat, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="flex items-center gap-2 text-xs text-gray-600"
-                                            >
-                                                <CheckCircle2 className="w-3.5 h-3.5 text-[#DA7A31] flex-shrink-0" />
-                                                <span>{feat}</span>
-                                            </div>
-                                        ))}
+                                    <div className="pt-5 border-t border-white/10 flex items-center justify-between gap-3">
+                                        <Link
+                                            href={route('public.services')}
+                                            className="lmc-btn lmc-btn-secondary lmc-btn-sm flex-1 justify-center"
+                                        >
+                                            <span>Learn More</span>
+                                            <ChevronRight className="w-3.5 h-3.5 text-[#DA7A31]" />
+                                        </Link>
+                                        <Link
+                                            href={route('public.contact')}
+                                            className="lmc-btn lmc-btn-primary lmc-btn-sm flex-1 justify-center"
+                                        >
+                                            <span>Inquire</span>
+                                        </Link>
                                     </div>
                                 </div>
-                                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                                    <Link
-                                        href={route('public.services')}
-                                        className="text-xs font-semibold text-[#0B1C30] hover:text-[#DA7A31] inline-flex items-center gap-1"
-                                    >
-                                        <span>Learn More</span>
-                                        <ChevronRight className="w-3.5 h-3.5" />
-                                    </Link>
-                                    <Link
-                                        href={route('public.contact')}
-                                        className="text-xs font-medium text-[#DA7A31] hover:underline"
-                                    >
-                                        Inquire
-                                    </Link>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </section>
 
             {/* Products & Platforms Showcase (With DEMO indicator) */}
-            <section className="py-20 bg-white border-t border-b border-gray-200">
+            <section className="py-20 bg-[#0B1C30]/50 border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center max-w-3xl mx-auto mb-14">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#DA7A31]/10 text-[#DA7A31] text-xs font-bold uppercase tracking-wider mb-3">
+                    <div className="text-center max-w-3xl mx-auto mb-14 reveal-on-scroll">
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#DA7A31]/15 text-[#DA7A31] text-xs font-bold uppercase tracking-wider mb-3">
+                            <Sparkles className="w-3.5 h-3.5" />
                             <span>Modular Business Suites</span>
                         </div>
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1C30] tracking-tight">
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                             LMC Proprietary Platforms
                         </h2>
-                        <p className="mt-3 text-sm text-[#4D4B55] leading-relaxed">
+                        <p className="mt-3 text-base text-gray-400 leading-relaxed">
                             Pre-architected, enterprise-ready software platforms designed for rapid customization and
                             deployment.
                         </p>
-                        <div className="mt-2 text-xs text-amber-700 bg-amber-50 inline-block px-3 py-1 rounded border border-amber-200">
-                            <strong>Note:</strong> Displayed platforms are demonstrative blueprints available for
-                            customization.
+                        <div className="mt-4 inline-flex items-center gap-2 text-xs text-amber-300 bg-amber-950/40 px-4 py-2 rounded-full border border-amber-500/30 shadow-xs">
+                            <Info className="w-4 h-4 text-amber-400 shrink-0" />
+                            <span>
+                                <strong>Enterprise Blueprint Note:</strong> Displayed platforms are pre-architected
+                                demonstrative systems available for rapid enterprise customization.
+                            </span>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                        {products.slice(0, 8).map((product) => (
-                            <div
-                                key={product.id}
-                                className="bg-[#F0F0F1] rounded-md p-5 border border-gray-200 flex flex-col justify-between hover:border-[#DA7A31]/50 transition-colors"
-                            >
-                                <div>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-200 text-gray-700 uppercase">
-                                            DEMO SYSTEM
-                                        </span>
-                                        <span className="text-[10px] font-semibold text-[#DA7A31]">
-                                            {product.status}
-                                        </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+                        {products.slice(0, 6).map((product, idx) => {
+                            const delayClass = idx % 3 === 0 ? 'delay-100' : idx % 3 === 1 ? 'delay-200' : 'delay-300';
+                            return (
+                                <div
+                                    key={product.id}
+                                    className={`lmc-dark-card p-6 sm:p-7 flex flex-col justify-between group relative overflow-hidden reveal-on-scroll ${delayClass}`}
+                                >
+                                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#DA7A31] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-md bg-[#071220] border border-white/10 text-white tracking-wider uppercase">
+                                                <Layers className="w-3 h-3 text-[#DA7A31]" />
+                                                DEMO SYSTEM
+                                            </span>
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-500/30">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                                Available
+                                            </span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-white group-hover:text-[#DA7A31] transition-colors mb-2">
+                                            {product.name}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm text-gray-400 line-clamp-3 leading-relaxed mb-6">
+                                            {product.summary}
+                                        </p>
                                     </div>
-                                    <h3 className="text-base font-bold text-[#0B1C30] mb-2">{product.name}</h3>
-                                    <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed mb-4">
-                                        {product.summary}
-                                    </p>
+                                    <div className="pt-5 border-t border-white/10 flex items-center justify-between gap-3">
+                                        <Link
+                                            href={route('public.products')}
+                                            className="lmc-btn lmc-btn-secondary lmc-btn-sm flex-1 justify-center"
+                                        >
+                                            <span>Inspect Features</span>
+                                            <ArrowRight className="w-3.5 h-3.5 text-[#DA7A31]" />
+                                        </Link>
+                                        <Link
+                                            href={route('public.contact')}
+                                            className="lmc-btn lmc-btn-primary lmc-btn-sm flex-1 justify-center"
+                                        >
+                                            <span>Request Demo</span>
+                                        </Link>
+                                    </div>
                                 </div>
-                                <div className="pt-3 border-t border-gray-200 flex items-center justify-between">
-                                    <Link
-                                        href={route('public.products')}
-                                        className="text-xs font-semibold text-[#0B1C30] hover:text-[#DA7A31]"
-                                    >
-                                        Inspect Features &rarr;
-                                    </Link>
-                                    <Link
-                                        href={route('public.contact')}
-                                        className="text-xs font-semibold text-[#DA7A31] hover:underline"
-                                    >
-                                        Request Demo
-                                    </Link>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
-                    <div className="text-center mt-10">
+                    <div className="text-center mt-12 reveal-on-scroll delay-200">
                         <Link
                             href={route('public.products')}
-                            className="inline-flex items-center gap-2 bg-[#0B1C30] hover:bg-[#132842] text-white text-sm font-semibold px-6 py-3 rounded shadow transition"
+                            className="lmc-btn lmc-btn-navy lmc-btn-lg inline-flex items-center gap-2"
                         >
-                            <span>Browse All 8 LMC Platform Solutions</span>
+                            <span>Explore All {products.length} Platform Solutions</span>
                             <ArrowRight className="w-4 h-4 text-[#DA7A31]" />
                         </Link>
                     </div>
@@ -275,7 +387,7 @@ export default function Home({ services, products, reviews, stats }: HomeProps) 
             {/* Talent Accelerator Banner */}
             <section className="py-16 bg-[#071220] text-white border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="bg-[#0B1C30] border border-[#DA7A31]/30 rounded-lg p-8 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-8">
+                    <div className="bg-gradient-to-br from-[#0B1C30] to-[#0F243E] border border-[#DA7A31]/30 rounded-2xl p-8 lg:p-12 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8 relative overflow-hidden reveal-scale">
                         <div className="max-w-2xl">
                             <div className="inline-flex items-center gap-2 text-xs font-bold text-[#DA7A31] uppercase tracking-wider mb-3">
                                 <GraduationCap className="w-4 h-4" />
@@ -308,13 +420,13 @@ export default function Home({ services, products, reviews, stats }: HomeProps) 
                         <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto flex-shrink-0">
                             <Link
                                 href={route('public.internship')}
-                                className="text-center bg-[#DA7A31] hover:bg-[#C2631D] text-white text-sm font-semibold px-6 py-3 rounded shadow transition"
+                                className="lmc-btn lmc-btn-primary"
                             >
                                 Apply for Internship
                             </Link>
                             <Link
                                 href={route('public.verify-internship')}
-                                className="text-center bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded transition flex items-center justify-center gap-1.5"
+                                className="lmc-btn lmc-btn-secondary"
                             >
                                 <ShieldCheck className="w-4 h-4 text-[#DA7A31]" />
                                 <span>Verify Student Certificate</span>
@@ -325,87 +437,82 @@ export default function Home({ services, products, reviews, stats }: HomeProps) 
             </section>
 
             {/* Approved Client Testimonials */}
-            <section className="py-20 bg-[#F0F0F1]">
+            <section className="py-20 bg-[#071220] border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4 reveal-on-scroll">
                         <div>
                             <div className="text-xs font-bold text-[#DA7A31] uppercase tracking-widest mb-2">
                                 Client Endorsements
                             </div>
-                            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1C30] tracking-tight">
+                            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                                 Verified Client Reviews
                             </h2>
                         </div>
                         <div className="mt-4 md:mt-0 flex items-center gap-3">
                             <Link
                                 href={route('public.reviews')}
-                                className="text-sm font-semibold text-[#0B1C30] hover:text-[#DA7A31] inline-flex items-center gap-1"
+                                className="lmc-btn lmc-btn-secondary"
                             >
-                                <span>Read all reviews ({reviews.length}+)</span>
-                                <ArrowRight className="w-4 h-4" />
+                                <span>Read All Reviews</span>
+                                <ArrowRight className="w-4 h-4 text-[#DA7A31]" />
                             </Link>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {reviews.slice(0, 3).map((review) => (
-                            <div
-                                key={review.id}
-                                className="bg-white rounded-md p-6 border border-gray-200 shadow-xs flex flex-col justify-between"
-                            >
-                                <div>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center space-x-1">
-                                            {[...Array(review.rating)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    className="w-4 h-4 fill-[#DA7A31] text-[#DA7A31]"
-                                                />
-                                            ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                        {reviews.slice(0, 3).map((review, idx) => {
+                            const delayClass = idx === 0 ? 'delay-100' : idx === 1 ? 'delay-200' : 'delay-300';
+                            return (
+                                <div
+                                    key={review.id}
+                                    className={`lmc-dark-card p-7 flex flex-col justify-between relative overflow-hidden group reveal-on-scroll ${delayClass}`}
+                                >
+                                    <Quote className="w-10 h-10 text-white/5 absolute top-5 right-5 pointer-events-none group-hover:text-[#DA7A31]/15 transition-colors" />
+                                    <div className="relative z-10">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center space-x-1">
+                                                {[...Array(review.rating)].map((_, i) => (
+                                                    <Star
+                                                        key={i}
+                                                        className="w-4 h-4 fill-[#DA7A31] text-[#DA7A31]"
+                                                    />
+                                                ))}
+                                            </div>
+                                            {review.is_verified_client && (
+                                                <span className="text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 inline-flex items-center gap-1.5">
+                                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                                    <span>Verified Client</span>
+                                                </span>
+                                            )}
                                         </div>
-                                        {review.is_verified_client && (
-                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
-                                                <CheckCircle2 className="w-3 h-3" />
-                                                <span>Verified Client</span>
-                                            </span>
-                                        )}
+
+                                        <p className="text-sm text-gray-300 italic leading-relaxed mb-6 font-normal">
+                                            "{review.review}"
+                                        </p>
                                     </div>
 
-                                    <p className="text-xs sm:text-sm text-[#4D4B55] italic leading-relaxed mb-6">
-                                        "{review.review}"
-                                    </p>
-                                </div>
-
-                                <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-full bg-[#0B1C30] text-white flex items-center justify-center font-bold text-xs">
-                                        {review.name.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-bold text-[#0B1C30]">{review.name}</div>
-                                        <div className="text-[11px] text-gray-500">
-                                            {review.role ? `${review.role}, ` : ''}
-                                            {review.company}
+                                    <div className="pt-5 border-t border-white/10 flex items-center gap-3.5 relative z-10">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1E3A5F] to-[#DA7A31] text-white flex items-center justify-center font-bold text-sm shadow-md border border-white/20">
+                                            {review.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-bold text-white">{review.name}</div>
+                                            <div className="text-xs text-gray-400">
+                                                {review.role ? `${review.role}, ` : ''}
+                                                {review.company}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-8 text-center">
-                        <Link
-                            href={route('public.reviews')}
-                            className="inline-flex items-center gap-2 text-xs font-semibold text-[#DA7A31] hover:underline"
-                        >
-                            <span>Have you partnered with LMC? Submit your corporate review &rarr;</span>
-                        </Link>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
 
             {/* Consultation CTA Banner */}
             <section className="bg-[#0B1C30] text-white py-16 border-t border-white/10">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 reveal-on-scroll">
                     <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                         Ready to Build Technology Beyond Boundaries?
                     </h2>
@@ -416,13 +523,13 @@ export default function Home({ services, products, reviews, stats }: HomeProps) 
                     <div className="pt-4 flex flex-wrap justify-center gap-4">
                         <Link
                             href={route('public.contact')}
-                            className="bg-[#DA7A31] hover:bg-[#C2631D] text-white font-semibold text-sm px-8 py-3.5 rounded shadow transition"
+                            className="lmc-btn lmc-btn-primary"
                         >
                             Initiate Project Discussion
                         </Link>
                         <Link
                             href={route('public.services')}
-                            className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm px-8 py-3.5 rounded transition"
+                            className="lmc-btn lmc-btn-outline-white"
                         >
                             Review Tech Stack
                         </Link>

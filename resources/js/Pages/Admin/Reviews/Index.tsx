@@ -235,7 +235,7 @@ export default function ReviewsIndex({ reviews, counts, filters }: ReviewsProps)
                                 {r.status !== 'Approved' && (
                                     <button
                                         onClick={() => approveReview(r.id)}
-                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded shadow-xs transition flex items-center justify-center gap-1.5"
+                                        className="w-full lmc-btn lmc-btn-sm bg-emerald-600 hover:bg-emerald-700 text-white"
                                     >
                                         <ThumbsUp className="w-3.5 h-3.5" />
                                         <span>Approve Review</span>
@@ -245,7 +245,7 @@ export default function ReviewsIndex({ reviews, counts, filters }: ReviewsProps)
                                 {r.status !== 'Rejected' && (
                                     <button
                                         onClick={() => rejectReview(r.id)}
-                                        className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded shadow-xs transition flex items-center justify-center gap-1.5"
+                                        className="w-full lmc-btn lmc-btn-sm bg-amber-600 hover:bg-amber-700 text-white"
                                     >
                                         <ThumbsDown className="w-3.5 h-3.5" />
                                         <span>Reject</span>
@@ -254,7 +254,7 @@ export default function ReviewsIndex({ reviews, counts, filters }: ReviewsProps)
 
                                 <button
                                     onClick={() => deleteReview(r.id, r.name)}
-                                    className="w-full text-red-600 hover:bg-red-50 text-xs font-semibold px-3 py-1.5 rounded transition flex items-center justify-center gap-1"
+                                    className="w-full lmc-btn lmc-btn-sm lmc-btn-danger"
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
                                     <span>Delete</span>

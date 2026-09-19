@@ -56,8 +56,8 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
             <Head title="Verify Internship Credential - LMC Digital Registry" />
 
             {/* Header */}
-            <div className="bg-[#0B1C30] text-white py-16 border-b border-white/10">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="bg-[#0B1C30] text-white py-16 border-b border-white/10 relative overflow-hidden">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 reveal-on-scroll">
                     <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#DA7A31] uppercase tracking-widest mb-3">
                         <ShieldCheck className="w-4 h-4" />
                         <span>Public Credential Verification</span>
@@ -72,43 +72,47 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
 
                     {/* Search Input Box */}
                     <form onSubmit={handleSearch} className="mt-8 max-w-xl mx-auto">
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-3">
                             <div className="relative flex-1">
-                                <Search className="w-5 h-5 absolute left-3.5 top-3 text-gray-400" />
+                                <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
+                                    <Search className="w-5 h-5 text-gray-400" />
+                                </div>
                                 <input
+                                    id="internship-search-input"
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     placeholder="Enter Internship ID (e.g. LMC-INT-2026-001)"
-                                    className="w-full pl-11 pr-4 py-3 rounded text-sm text-[#0B1C30] placeholder-gray-400 bg-white border-none focus:ring-2 focus:ring-[#DA7A31] shadow-md"
+                                    className="lmc-search-input w-full pl-12 pr-4 py-3.5 rounded-xl text-sm text-white placeholder-gray-400 bg-[#071220] border border-white/20 focus:border-[#DA7A31] focus:ring-2 focus:ring-[#DA7A31]/20 shadow-md transition-colors"
+                                    style={{ paddingLeft: '3.25rem' }}
                                     required
                                 />
                             </div>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="bg-[#DA7A31] hover:bg-[#C2631D] text-white font-bold text-xs sm:text-sm px-6 py-3 rounded shadow-md transition whitespace-nowrap"
+                                className="lmc-btn lmc-btn-primary w-full sm:w-auto justify-center whitespace-nowrap py-3.5"
                             >
                                 {loading ? 'Checking...' : 'Verify Now'}
                             </button>
                         </div>
-                        <div className="text-[11px] text-gray-400 mt-2 text-left sm:text-center">
-                            Demo try: <span className="text-[#DA7A31] font-mono font-bold cursor-pointer" onClick={() => setSearchTerm('LMC-INT-2026-001')}>LMC-INT-2026-001</span> or <span className="text-[#DA7A31] font-mono font-bold cursor-pointer" onClick={() => setSearchTerm('LMC-INT-2026-002')}>LMC-INT-2026-002</span>
+                        <div className="text-[11px] text-gray-400 mt-2.5 text-left sm:text-center">
+                            Demo try: <span className="text-[#DA7A31] font-mono font-bold cursor-pointer hover:underline" onClick={() => setSearchTerm('LMC-INT-2026-001')}>LMC-INT-2026-001</span> or <span className="text-[#DA7A31] font-mono font-bold cursor-pointer hover:underline" onClick={() => setSearchTerm('LMC-INT-2026-002')}>LMC-INT-2026-002</span>
                         </div>
                     </form>
                 </div>
             </div>
 
             {/* Results Section */}
-            <div className="py-16 bg-[#F0F0F1] min-h-[450px]">
+            <div className="py-16 bg-[#071220] min-h-[450px] border-b border-white/10">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                     {!searched && (
-                        <div className="bg-white rounded-lg p-10 border border-gray-200 text-center shadow-xs">
-                            <ShieldCheck className="w-12 h-12 text-[#0B1C30]/40 mx-auto mb-4" />
-                            <h2 className="text-lg font-bold text-[#0B1C30] mb-2">
+                        <div className="lmc-dark-card rounded-2xl p-10 text-center reveal-on-scroll">
+                            <ShieldCheck className="w-12 h-12 text-[#DA7A31] mx-auto mb-4" />
+                            <h2 className="text-lg font-bold text-white mb-2">
                                 Instant Institutional Validation
                             </h2>
-                            <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
+                            <p className="text-xs sm:text-sm text-gray-400 max-w-md mx-auto leading-relaxed">
                                 Enter the Internship ID printed on the candidate's certificate or verification letter to
                                 validate authenticity against our secure digital registry.
                             </p>
@@ -116,9 +120,9 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                     )}
 
                     {searched && intern && (
-                        <div className="bg-white rounded-lg border-2 border-emerald-500 shadow-lg overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                        <div className="lmc-dark-card rounded-2xl border-2 border-emerald-500/60 shadow-xl overflow-hidden animate-modal-enter">
                             {/* Success Status Header */}
-                            <div className="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
+                            <div className="bg-emerald-600/90 text-white px-6 py-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
                                         <CheckCircle2 className="w-6 h-6 text-white" />
@@ -138,12 +142,12 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                             </div>
 
                             {/* Candidate Details (Strictly Safe Public Information Only) */}
-                            <div className="p-6 sm:p-8 space-y-6">
-                                <div className="border-b border-gray-100 pb-5">
+                            <div className="p-6 sm:p-8 space-y-6 text-white">
+                                <div className="border-b border-white/10 pb-5">
                                     <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
                                         Intern Name
                                     </div>
-                                    <div className="text-2xl font-extrabold text-[#0B1C30]">
+                                    <div className="text-2xl font-extrabold text-white">
                                         {intern.name}
                                     </div>
                                 </div>
@@ -153,7 +157,7 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                                         <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-1">
                                             University / Institution
                                         </span>
-                                        <div className="text-sm font-bold text-[#0B1C30] flex items-center gap-1.5">
+                                        <div className="text-sm font-bold text-white flex items-center gap-1.5">
                                             <Building2 className="w-4 h-4 text-[#DA7A31]" />
                                             <span>{intern.university}</span>
                                         </div>
@@ -163,7 +167,7 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                                         <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-1">
                                             Degree Course
                                         </span>
-                                        <div className="text-sm font-bold text-[#0B1C30] flex items-center gap-1.5">
+                                        <div className="text-sm font-bold text-white flex items-center gap-1.5">
                                             <GraduationCap className="w-4 h-4 text-[#DA7A31]" />
                                             <span>{intern.course}</span>
                                         </div>
@@ -173,7 +177,7 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                                         <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-1">
                                             Assigned Department
                                         </span>
-                                        <div className="text-sm font-bold text-[#0B1C30]">
+                                        <div className="text-sm font-bold text-white">
                                             {intern.department}
                                         </div>
                                     </div>
@@ -182,7 +186,7 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                                         <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-1">
                                             Internship Period
                                         </span>
-                                        <div className="text-sm font-bold text-[#0B1C30] flex items-center gap-1.5">
+                                        <div className="text-sm font-bold text-white flex items-center gap-1.5">
                                             <Calendar className="w-4 h-4 text-[#DA7A31]" />
                                             <span>{intern.period}</span>
                                         </div>
@@ -201,23 +205,23 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                                         <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-1">
                                             Cryptographic Hash
                                         </span>
-                                        <div className="font-mono text-xs font-semibold text-gray-700">
+                                        <div className="font-mono text-xs font-semibold text-gray-300 break-all select-all">
                                             {intern.verification_code}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Download Certificate Action */}
-                                <div className="pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                    <div className="text-xs text-gray-500">
+                                <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div className="text-xs text-gray-400 text-center sm:text-left">
                                         Direct PDF document generation with official corporate seal.
                                     </div>
                                     <a
                                         href={route('public.certificate.download', { code: intern.verification_code })}
                                         target="_blank"
-                                        className="inline-flex items-center gap-2 bg-[#0B1C30] hover:bg-[#132842] text-white text-xs font-bold px-5 py-2.5 rounded shadow transition"
+                                        className="lmc-btn lmc-btn-primary w-full sm:w-auto justify-center"
                                     >
-                                        <Download className="w-4 h-4 text-[#DA7A31]" />
+                                        <Download className="w-4 h-4" />
                                         <span>Download Official Certificate (PDF)</span>
                                     </a>
                                 </div>
@@ -226,14 +230,14 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                     )}
 
                     {searched && !intern && (
-                        <div className="bg-white rounded-lg border-2 border-red-400 shadow-md p-8 text-center animate-in fade-in">
-                            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
+                        <div className="lmc-dark-card rounded-2xl border-2 border-red-500/50 p-8 text-center animate-lmc-fade-in">
+                            <div className="w-12 h-12 rounded-full bg-red-500/15 text-red-400 flex items-center justify-center mx-auto mb-4">
                                 <XCircle className="w-7 h-7" />
                             </div>
-                            <h2 className="text-lg font-extrabold text-red-600 uppercase tracking-wide mb-2">
+                            <h2 className="text-lg font-extrabold text-red-400 uppercase tracking-wide mb-2">
                                 ✕ VERIFICATION RECORD NOT FOUND
                             </h2>
-                            <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto leading-relaxed mb-6">
+                            <p className="text-xs sm:text-sm text-gray-300 max-w-md mx-auto leading-relaxed mb-6">
                                 No internship record matches the provided identifier "{searchTerm}". Please double-check
                                 the ID formatting or contact LMC verification administration.
                             </p>

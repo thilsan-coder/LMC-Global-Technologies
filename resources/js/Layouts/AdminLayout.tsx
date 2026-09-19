@@ -20,15 +20,32 @@ import {
     Menu,
     X,
     ExternalLink,
-    ChevronRight,
-    User,
+    ChevronDown,
     CalendarCheck,
+    Building2,
+    MessageSquare,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
     children: React.ReactNode;
     title?: string;
     subtitle?: string;
+}
+
+interface NavGroupItem {
+    name: string;
+    href: string;
+    icon: React.ElementType;
+    active: boolean;
+    show: boolean;
+}
+
+interface NavGroup {
+    id: string;
+    label: string;
+    icon: React.ElementType;
+    show: boolean;
+    items: NavGroupItem[];
 }
 
 export default function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
@@ -48,28 +65,29 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
     const isAdmin = userRoles.includes('Admin');
     const isStaff = userRoles.includes('Staff');
 
-    const navigationGroups = [
+    const overviewItems: NavGroupItem[] = [
         {
-            label: 'Executive Overview',
-            items: [
-                {
-                    name: 'Admin Dashboard',
-                    href: route('admin.dashboard'),
-                    icon: LayoutDashboard,
-                    active: route().current('admin.dashboard'),
-                    show: isAdmin,
-                },
-                {
-                    name: 'Staff Workspace',
-                    href: route('staff.dashboard'),
-                    icon: LayoutDashboard,
-                    active: route().current('staff.dashboard'),
-                    show: isStaff && !isAdmin,
-                },
-            ],
+            name: 'Admin Dashboard',
+            href: route('admin.dashboard'),
+            icon: LayoutDashboard,
+            active: route().current('admin.dashboard'),
+            show: isAdmin,
         },
         {
+            name: 'Staff Workspace',
+            href: route('staff.dashboard'),
+            icon: LayoutDashboard,
+            active: route().current('staff.dashboard'),
+            show: isStaff && !isAdmin,
+        },
+    ];
+
+    const navigationGroups: NavGroup[] = [
+        {
+            id: 'crm',
             label: 'Enterprise CRM',
+            icon: Briefcase,
+            show: true,
             items: [
                 {
                     name: 'Customers',
@@ -102,7 +120,32 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
             ],
         },
         {
-            label: 'Talent & Internships',
+            id: 'talent',
+            label: 'Talent',
+            icon: UserCheck,
+            show: true,
+            items: [
+                {
+                    name: 'Staff Roster & Users',
+                    href: route('admin.users.index'),
+                    icon: Users,
+                    active: route().current('admin.users.*'),
+                    show: isAdmin,
+                },
+                {
+                    name: 'Staff Workspace',
+                    href: route('staff.dashboard'),
+                    icon: Building2,
+                    active: route().current('staff.dashboard'),
+                    show: isStaff || isAdmin,
+                },
+            ],
+        },
+        {
+            id: 'internship',
+            label: 'Internship',
+            icon: GraduationCap,
+            show: true,
             items: [
                 {
                     name: 'Internship Records',
@@ -121,7 +164,25 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
             ],
         },
         {
-            label: 'Content & Moderation',
+            id: 'contact',
+            label: 'Contact',
+            icon: Mail,
+            show: true,
+            items: [
+                {
+                    name: 'Contact Inquiries',
+                    href: route('admin.contacts.index'),
+                    icon: MessageSquare,
+                    active: route().current('admin.contacts.*'),
+                    show: true,
+                },
+            ],
+        },
+        {
+            id: 'moderation',
+            label: 'Moderation System',
+            icon: Star,
+            show: true,
             items: [
                 {
                     name: 'Review Moderation',
@@ -144,17 +205,13 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
                     active: route().current('admin.products.*'),
                     show: true,
                 },
-                {
-                    name: 'Contact Inquiries',
-                    href: route('admin.contacts.index'),
-                    icon: Mail,
-                    active: route().current('admin.contacts.*'),
-                    show: true,
-                },
             ],
         },
         {
-            label: 'System Governance',
+            id: 'governance',
+            label: 'Governance',
+            icon: Shield,
+            show: isAdmin,
             items: [
                 {
                     name: 'Users & Permissions',
@@ -167,30 +224,61 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
         },
     ];
 
+    // Initialize open sections based on which group contains the current active route
+    const getInitialOpenSections = () => {
+        const initial: Record<string, boolean> = {};
+        navigationGroups.forEach((group) => {
+            const hasActiveChild = group.items.some((item) => item.show && item.active);
+            if (hasActiveChild) {
+                initial[group.id] = true;
+            }
+        });
+        return initial;
+    };
+
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>(getInitialOpenSections);
+
+    // Expand section automatically when route changes to an item inside it
+    useEffect(() => {
+        navigationGroups.forEach((group) => {
+            const hasActiveChild = group.items.some((item) => item.show && item.active);
+            if (hasActiveChild) {
+                setOpenSections((prev) => ({ ...prev, [group.id]: true }));
+            }
+        });
+    }, [route().current()]);
+
+    const toggleSection = (groupId: string) => {
+        setOpenSections((prev) => ({
+            ...prev,
+            [groupId]: !prev[groupId],
+        }));
+    };
+
     const handleLogout = () => {
         router.post(route('logout'));
     };
 
     return (
-        <div className="min-h-screen bg-[#F0F0F1] flex">
+        <div className="h-screen w-screen overflow-hidden bg-[#F0F0F1] flex">
             <Toaster position="top-right" richColors />
 
             {/* Mobile Sidebar Overlay */}
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden"
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
 
-            {/* Sidebar Navigation */}
+            {/* Sidebar Navigation - INDEPENDENT FIXED SIDEBAR */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#0B1C30] text-white flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+                className={`fixed inset-y-0 left-0 z-50 w-64 h-full bg-[#0B1C30] text-white flex flex-col transition-transform duration-200 ease-in-out flex-shrink-0 border-r border-white/10 lg:static lg:translate-x-0 ${
                     sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
                 }`}
             >
                 {/* Brand Header */}
-                <div className="p-5 border-b border-white/10 flex items-center justify-between">
+                <div className="p-5 border-b border-white/10 flex items-center justify-between flex-shrink-0 bg-[#071220]">
                     <LmcBrandLogo variant="light" size="sm" href={route('dashboard')} />
                     <button
                         onClick={() => setSidebarOpen(false)}
@@ -201,51 +289,113 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
                 </div>
 
                 {/* Role indicator badge */}
-                <div className="px-5 py-3 bg-[#071220] border-b border-white/5 flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Authenticated Portal:</span>
-                    <span className="bg-[#DA7A31]/20 text-[#DA7A31] border border-[#DA7A31]/40 px-2 py-0.5 rounded font-semibold text-[11px] uppercase tracking-wider">
+                <div className="px-5 py-2.5 bg-[#071220]/80 border-b border-white/5 flex items-center justify-between text-xs flex-shrink-0">
+                    <span className="text-gray-400 text-[11px]">Authenticated Portal:</span>
+                    <span className="bg-[#DA7A31]/20 text-[#DA7A31] border border-[#DA7A31]/40 px-2 py-0.5 rounded font-semibold text-[10px] uppercase tracking-wider">
                         {userRoles[0] || 'User'}
                     </span>
                 </div>
 
-                {/* Navigation Links Scrollable */}
-                <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-                    {navigationGroups.map((group) => {
-                        const visibleItems = group.items.filter((item) => item.show);
-                        if (visibleItems.length === 0) return null;
+                {/* Navigation Links Scrollable Area - INDEPENDENT SCROLLBAR */}
+                <div className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
+                    {/* Overview Items */}
+                    <div>
+                        <div className="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                            Overview
+                        </div>
+                        <div className="space-y-1">
+                            {overviewItems.filter((item) => item.show).map((item) => {
+                                const Icon = item.icon;
+                                return (
+                                    <Link
+                                        key={item.name}
+                                        href={item.href}
+                                        onClick={() => setSidebarOpen(false)}
+                                        className={`flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
+                                            item.active
+                                                ? 'bg-[#DA7A31] text-white font-semibold shadow-xs'
+                                                : 'text-gray-300 hover:bg-[#162A45] hover:text-white'
+                                        }`}
+                                    >
+                                        <Icon className="w-4 h-4 flex-shrink-0" />
+                                        <span className="truncate">{item.name}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
 
-                        return (
-                            <div key={group.label}>
-                                <div className="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                                    {group.label}
+                    {/* Collapsible Accordion Navigation Groups */}
+                    <div className="space-y-2">
+                        <div className="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                            Management Modules
+                        </div>
+
+                        {navigationGroups.map((group) => {
+                            const visibleItems = group.items.filter((item) => item.show);
+                            if (!group.show || visibleItems.length === 0) return null;
+
+                            const isOpen = !!openSections[group.id];
+                            const hasActiveChild = visibleItems.some((item) => item.active);
+                            const GroupIcon = group.icon;
+
+                            return (
+                                <div key={group.id} className="rounded-lg overflow-hidden">
+                                    {/* Collapsible Group Header Button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleSection(group.id)}
+                                        className={`w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold rounded-md transition-all ${
+                                            hasActiveChild
+                                                ? 'bg-[#162A45] text-white border-l-4 border-[#DA7A31]'
+                                                : 'text-gray-300 hover:bg-[#162A45]/70 hover:text-white'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <GroupIcon className={`w-4 h-4 flex-shrink-0 ${hasActiveChild ? 'text-[#DA7A31]' : 'text-gray-400'}`} />
+                                            <span className="truncate">{group.label}</span>
+                                            {hasActiveChild && (
+                                                <span className="w-1.5 h-1.5 rounded-full bg-[#DA7A31] flex-shrink-0" />
+                                            )}
+                                        </div>
+                                        <ChevronDown
+                                            className={`w-4 h-4 text-gray-400 transition-transform duration-200 flex-shrink-0 ${
+                                                isOpen ? 'transform rotate-180 text-white' : ''
+                                            }`}
+                                        />
+                                    </button>
+
+                                    {/* Submenu Items Dropdown */}
+                                    {isOpen && (
+                                        <div className="mt-1 ml-3 pl-2.5 border-l border-white/10 space-y-1 py-1 transition-all">
+                                            {visibleItems.map((item) => {
+                                                const ItemIcon = item.icon;
+                                                return (
+                                                    <Link
+                                                        key={item.name}
+                                                        href={item.href}
+                                                        onClick={() => setSidebarOpen(false)}
+                                                        className={`flex items-center gap-2.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                                                            item.active
+                                                                ? 'bg-[#DA7A31] text-white font-semibold shadow-xs'
+                                                                : 'text-gray-300 hover:bg-[#162A45] hover:text-white'
+                                                        }`}
+                                                    >
+                                                        <ItemIcon className="w-3.5 h-3.5 flex-shrink-0 opacity-80" />
+                                                        <span className="truncate">{item.name}</span>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="space-y-1">
-                                    {visibleItems.map((item) => {
-                                        const Icon = item.icon;
-                                        return (
-                                            <Link
-                                                key={item.name}
-                                                href={item.href}
-                                                onClick={() => setSidebarOpen(false)}
-                                                className={`flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
-                                                    item.active
-                                                        ? 'bg-[#DA7A31] text-white font-semibold shadow-sm'
-                                                        : 'text-gray-300 hover:bg-[#162A45] hover:text-white'
-                                                }`}
-                                            >
-                                                <Icon className="w-4 h-4 flex-shrink-0" />
-                                                <span>{item.name}</span>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
 
-                {/* User footer & Logout */}
-                <div className="p-4 border-t border-white/10 bg-[#071220]">
+                {/* User Footer & Logout */}
+                <div className="p-4 border-t border-white/10 bg-[#071220] flex-shrink-0">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-8 h-8 rounded-full bg-[#162A45] border border-white/10 flex items-center justify-center text-xs font-bold text-[#DA7A31]">
                             {auth.user?.name.charAt(0) || 'U'}
@@ -264,14 +414,14 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
                         <Link
                             href={route('public.home')}
                             target="_blank"
-                            className="flex-1 text-center text-[11px] bg-white/5 hover:bg-white/10 text-gray-300 py-1.5 rounded transition flex items-center justify-center gap-1"
+                            className="flex-1 text-center text-[11px] lmc-btn lmc-btn-outline-white lmc-btn-sm"
                         >
                             <span>Live Site</span>
                             <ExternalLink className="w-3 h-3" />
                         </Link>
                         <button
                             onClick={handleLogout}
-                            className="flex-1 text-center text-[11px] bg-red-950/40 hover:bg-red-900/50 text-red-300 border border-red-800/30 py-1.5 rounded transition flex items-center justify-center gap-1"
+                            className="flex-1 text-center text-[11px] lmc-btn lmc-btn-danger lmc-btn-sm"
                         >
                             <LogOut className="w-3 h-3" />
                             <span>Sign Out</span>
@@ -280,10 +430,10 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
                 </div>
             </aside>
 
-            {/* Main Content Pane */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            {/* Main Content Pane - INDEPENDENT SCROLL */}
+            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                 {/* Admin Topbar */}
-                <header className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between shadow-xs sticky top-0 z-30">
+                <header className="flex-shrink-0 bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between shadow-xs z-30">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setSidebarOpen(true)}
@@ -330,7 +480,7 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
                     </div>
                 </header>
 
-                {/* Main Body */}
+                {/* Main Body - INDEPENDENT MAIN SCROLLBAR */}
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                     <div className="max-w-7xl mx-auto">{children}</div>
                 </main>
@@ -338,3 +488,4 @@ export default function AdminLayout({ children, title, subtitle }: AdminLayoutPr
         </div>
     );
 }
+

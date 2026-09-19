@@ -107,7 +107,7 @@ export default function ServicesIndex({ services }: ServicesProps) {
                 </div>
                 <button
                     onClick={openCreate}
-                    className="bg-[#DA7A31] hover:bg-[#C2631D] text-white text-xs font-bold px-4 py-2 rounded shadow-xs flex items-center gap-1.5"
+                    className="lmc-btn lmc-btn-primary lmc-btn-sm"
                 >
                     <Plus className="w-4 h-4" />
                     <span>Add Service Offering</span>
@@ -279,14 +279,14 @@ export default function ServicesIndex({ services }: ServicesProps) {
                                 <button
                                     type="button"
                                     onClick={() => setModalOpen(false)}
-                                    className="px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900"
+                                    className="lmc-btn lmc-btn-secondary lmc-btn-sm"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="bg-[#DA7A31] hover:bg-[#C2631D] text-white text-xs font-bold px-4 py-2 rounded shadow transition"
+                                    className="lmc-btn lmc-btn-primary lmc-btn-sm"
                                 >
                                     {processing ? 'Saving...' : editingService ? 'Update Service' : 'Save Service'}
                                 </button>

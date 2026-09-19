@@ -1,10 +1,8 @@
+import React, { useState, FormEventHandler } from 'react';
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
-import { Lock, Mail, ArrowRight, Shield } from 'lucide-react';
+import { Lock, Mail, LogIn, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export default function Login({
     status,
@@ -13,6 +11,8 @@ export default function Login({
     status?: string;
     canResetPassword?: boolean;
 }) {
+    const [showPassword, setShowPassword] = useState(false);
+
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -26,138 +26,134 @@ export default function Login({
         });
     };
 
-    const fillRole = (email: string) => {
-        setData((prev) => ({
-            ...prev,
-            email: email,
-            password: 'password',
-        }));
-    };
-
     return (
         <GuestLayout>
             <Head title="Enterprise Portal Sign In" />
 
+            {/* Status Alert */}
             {status && (
-                <div className="mb-4 text-xs font-semibold text-emerald-700 bg-emerald-50 p-3 rounded border border-emerald-200">
-                    {status}
+                <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2.5 shadow-lg shadow-emerald-500/10">
+                    <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-400" />
+                    <span>{status}</span>
                 </div>
             )}
 
-            <div className="mb-6">
-                <h2 className="text-xl font-bold text-[#0B1C30]">Sign In to Management Portal</h2>
-                <p className="text-xs text-gray-500 mt-1">
-                    Enter your authorized corporate credentials to access your dashboard.
+            {/* Page Title & Subtitle */}
+            <div className="mb-8 text-center sm:text-left">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                    Sign In to Portal
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+                    Enter your authorized corporate credentials to access your management workspace.
                 </p>
             </div>
 
-            {/* Quick-fill Demo Accounts for effortless testing */}
-            <div className="mb-6 p-3 bg-gray-50 rounded border border-gray-200">
-                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <Shield className="w-3.5 h-3.5 text-[#DA7A31]" />
-                    <span>Quick Demo Credentials:</span>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 text-xs">
-                    <button
-                        type="button"
-                        onClick={() => fillRole('admin@lmcglobal.tech')}
-                        className="py-1.5 px-2 bg-white hover:bg-orange-50 hover:border-[#DA7A31] border border-gray-300 rounded font-semibold text-[#0B1C30] transition text-center"
-                    >
-                        Admin
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => fillRole('staff@lmcglobal.tech')}
-                        className="py-1.5 px-2 bg-white hover:bg-orange-50 hover:border-[#DA7A31] border border-gray-300 rounded font-semibold text-[#0B1C30] transition text-center"
-                    >
-                        Staff
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => fillRole('intern@lmcglobal.tech')}
-                        className="py-1.5 px-2 bg-white hover:bg-orange-50 hover:border-[#DA7A31] border border-gray-300 rounded font-semibold text-[#0B1C30] transition text-center"
-                    >
-                        Intern
-                    </button>
-                </div>
-                <div className="text-[10px] text-gray-400 mt-1.5 text-center">
-                    Default password: <code className="font-mono text-gray-600">password</code>
-                </div>
-            </div>
-
-            <form onSubmit={submit} className="space-y-4">
+            {/* Login Form */}
+            <form onSubmit={submit} className="space-y-6">
+                {/* Corporate Email */}
                 <div>
-                    <label className="block text-xs font-semibold text-[#0B1C30] mb-1">
-                        Corporate Email Address
+                    <label className="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-2">
+                        Corporate Email Address *
                     </label>
                     <div className="relative">
-                        <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                            <Mail className="w-4 h-4" />
+                        </div>
                         <input
                             id="email"
                             type="email"
                             name="email"
                             value={data.email}
-                            className="w-full pl-9 text-xs rounded border-gray-300 focus:border-[#DA7A31] focus:ring-[#DA7A31] py-2"
-                            autoComplete="username"
                             required
-                            placeholder="user@lmcglobal.tech"
+                            autoComplete="username"
                             onChange={(e) => setData('email', e.target.value)}
+                            className="lmc-input-has-icon w-full text-sm rounded-xl border border-white/15 bg-[#071220] pl-11 pr-4 py-3.5 text-white placeholder:text-gray-500 focus:border-[#DA7A31] focus:ring-2 focus:ring-[#DA7A31]/25 transition-all shadow-inner"
+                            placeholder="user@lmcglobal.tech"
                         />
                     </div>
-                    <InputError message={errors.email} className="mt-1" />
+                    {errors.email && (
+                        <InputError message={errors.email} className="mt-1.5" />
+                    )}
                 </div>
 
+                {/* Password */}
                 <div>
-                    <label className="block text-xs font-semibold text-[#0B1C30] mb-1">
-                        Password
+                    <label className="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-2">
+                        Account Password *
                     </label>
                     <div className="relative">
-                        <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                            <Lock className="w-4 h-4" />
+                        </div>
                         <input
                             id="password"
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             name="password"
                             value={data.password}
-                            className="w-full pl-9 text-xs rounded border-gray-300 focus:border-[#DA7A31] focus:ring-[#DA7A31] py-2"
-                            autoComplete="current-password"
                             required
-                            placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                            autoComplete="current-password"
                             onChange={(e) => setData('password', e.target.value)}
+                            className="lmc-input-has-icon w-full text-sm rounded-xl border border-white/15 bg-[#071220] pl-11 pr-11 py-3.5 text-white placeholder:text-gray-500 focus:border-[#DA7A31] focus:ring-2 focus:ring-[#DA7A31]/25 transition-all shadow-inner"
+                            placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-white transition-colors"
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                            {showPassword ? (
+                                <EyeOff className="w-4 h-4 text-[#DA7A31]" />
+                            ) : (
+                                <Eye className="w-4 h-4" />
+                            )}
+                        </button>
                     </div>
-                    <InputError message={errors.password} className="mt-1" />
+                    {errors.password && (
+                        <InputError message={errors.password} className="mt-1.5" />
+                    )}
                 </div>
 
+                {/* Remember Me & Forgot Password */}
                 <div className="flex items-center justify-between text-xs pt-1">
-                    <label className="flex items-center gap-1.5 cursor-pointer text-gray-600">
+                    <label className="flex items-center gap-2 cursor-pointer text-gray-300 hover:text-white transition-colors select-none">
                         <input
                             type="checkbox"
                             checked={data.remember}
                             onChange={(e) => setData('remember', e.target.checked)}
-                            className="rounded border-gray-300 text-[#DA7A31] focus:ring-[#DA7A31]"
+                            className="w-4 h-4 rounded border-white/20 bg-[#071220] text-[#DA7A31] focus:ring-[#DA7A31]/30 focus:ring-offset-0 cursor-pointer"
                         />
-                        <span>Remember session</span>
+                        <span className="font-medium">Remember Session</span>
                     </label>
 
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
-                            className="text-xs text-[#DA7A31] hover:underline"
+                            className="text-xs font-semibold text-[#DA7A31] hover:text-amber-400 transition-colors hover:underline"
                         >
-                            Forgot password?
+                            Forgot Password?
                         </Link>
                     )}
                 </div>
 
-                <div className="pt-3">
+                {/* Submit Action */}
+                <div className="pt-2">
                     <button
                         type="submit"
                         disabled={processing}
-                        className="w-full bg-[#DA7A31] hover:bg-[#C2631D] text-white font-bold text-xs py-2.5 rounded shadow transition flex items-center justify-center gap-2"
+                        id="submit-login-btn"
+                        className="lmc-btn lmc-btn-primary group w-full py-3.5 rounded-xl font-bold text-sm tracking-wide justify-center shadow-lg shadow-[#DA7A31]/20 transition-all hover:scale-[1.01]"
                     >
-                        <span>{processing ? 'Authenticating...' : 'Sign In to Portal'}</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <span>{processing ? 'Authenticating Credentials...' : 'Sign In to Portal'}</span>
                     </button>
+                </div>
+
+                {/* Security Footer Note */}
+                <div className="pt-4 border-t border-white/10 text-center">
+                    <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
+                        Authorized Personnel Only &bull; Protected under SOC-2 Type II Enterprise Protocols.
+                    </p>
                 </div>
             </form>
         </GuestLayout>

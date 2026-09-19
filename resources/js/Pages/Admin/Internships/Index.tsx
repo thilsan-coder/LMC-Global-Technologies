@@ -166,7 +166,7 @@ export default function InternshipsIndex({ interns, filters }: InternshipsProps)
 
                     <button
                         type="submit"
-                        className="bg-[#0B1C30] hover:bg-[#132842] text-white text-xs font-semibold px-4 py-1.5 rounded"
+                        className="lmc-btn lmc-btn-navy lmc-btn-sm"
                     >
                         Filter
                     </button>
@@ -174,7 +174,7 @@ export default function InternshipsIndex({ interns, filters }: InternshipsProps)
 
                 <button
                     onClick={openCreate}
-                    className="w-full sm:w-auto bg-[#DA7A31] hover:bg-[#C2631D] text-white text-xs font-bold px-4 py-2 rounded shadow-xs flex items-center justify-center gap-1.5"
+                    className="w-full sm:w-auto lmc-btn lmc-btn-primary lmc-btn-sm"
                 >
                     <Plus className="w-4 h-4" />
                     <span>Register Intern</span>
@@ -491,14 +491,14 @@ export default function InternshipsIndex({ interns, filters }: InternshipsProps)
                                 <button
                                     type="button"
                                     onClick={() => setModalOpen(false)}
-                                    className="px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900"
+                                    className="lmc-btn lmc-btn-secondary lmc-btn-sm"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="bg-[#DA7A31] hover:bg-[#C2631D] text-white text-xs font-bold px-4 py-2 rounded shadow transition"
+                                    className="lmc-btn lmc-btn-primary lmc-btn-sm"
                                 >
                                     {processing ? 'Processing...' : editingIntern ? 'Update Record' : 'Save & Register Intern'}
                                 </button>

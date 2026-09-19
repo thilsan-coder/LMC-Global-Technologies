@@ -24,8 +24,11 @@ class LmcPlatformTest extends TestCase
         $this->get('/')->assertStatus(200);
         $this->get('/about')->assertStatus(200);
         $this->get('/services')->assertStatus(200);
+        $this->get('/services/web-application-development')->assertStatus(200);
         $this->get('/products')->assertStatus(200);
+        $this->get('/products/lmc-crm-system/architecture')->assertStatus(200);
         $this->get('/reviews')->assertStatus(200);
+        $this->get('/reviews/create')->assertStatus(200);
         $this->get('/internship')->assertStatus(200);
         $this->get('/verify-internship')->assertStatus(200);
         $this->get('/verify-attendance')->assertStatus(200);

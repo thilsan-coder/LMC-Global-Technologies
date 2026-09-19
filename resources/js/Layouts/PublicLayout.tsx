@@ -35,6 +35,35 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
         }
     }, [flash]);
 
+    // Scroll reveal observer that activates on page load and route changes
+    useEffect(() => {
+        const observerCallback: IntersectionObserverCallback = (entries, observer) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-revealed');
+                    observer.unobserve(entry.target);
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, {
+            root: null,
+            rootMargin: '0px 0px -30px 0px',
+            threshold: 0.05,
+        });
+
+        // Small timeout ensures all nested DOM nodes have mounted
+        const timer = setTimeout(() => {
+            const elements = document.querySelectorAll('.reveal-on-scroll, .reveal-scale');
+            elements.forEach((el) => observer.observe(el));
+        }, 50);
+
+        return () => {
+            clearTimeout(timer);
+            observer.disconnect();
+        };
+    }, [url, children]);
+
     const navLinks = [
         { name: 'Home', href: route('public.home'), active: route().current('public.home') },
         { name: 'About Us', href: route('public.about'), active: route().current('public.about') },
@@ -49,58 +78,11 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
         route().current('public.verify-internship') || route().current('public.verify-attendance');
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#F0F0F1] text-[#4D4B55] selection:bg-[#DA7A31] selection:text-white">
+        <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col bg-[#071220] text-gray-300 antialiased selection:bg-[#DA7A31] selection:text-white">
             <Toaster position="top-right" richColors />
 
-            {/* Top Corporate Strip */}
-            <div className="bg-[#071220] text-gray-300 text-xs py-2 px-4 border-b border-white/5">
-                <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
-                    <div className="flex items-center space-x-6 text-[11px]">
-                        <span className="flex items-center gap-1.5 text-gray-400">
-                            <Phone className="w-3.5 h-3.5 text-[#DA7A31]" />
-                            <span>+94 11 234 5678</span>
-                        </span>
-                        <span className="hidden sm:flex items-center gap-1.5 text-gray-400">
-                            <Mail className="w-3.5 h-3.5 text-[#DA7A31]" />
-                            <span>contact@lmcglobal.tech</span>
-                        </span>
-                        <span className="hidden md:inline-block text-[#DA7A31] font-medium tracking-wide">
-                            "Technology Beyond Boundaries"
-                        </span>
-                    </div>
-
-                    <div className="flex items-center space-x-4 text-[11px]">
-                        <Link
-                            href={route('public.verify-internship')}
-                            className="text-gray-300 hover:text-white transition flex items-center gap-1"
-                        >
-                            <ShieldCheck className="w-3.5 h-3.5 text-[#DA7A31]" />
-                            <span className="hidden sm:inline">Verify Credential</span>
-                        </Link>
-                        <span className="text-gray-600">|</span>
-                        {auth?.user ? (
-                            <Link
-                                href={route('dashboard')}
-                                className="text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1"
-                            >
-                                <span>Portal Dashboard ({auth.user.name.split(' ')[0]})</span>
-                                <ArrowRight className="w-3 h-3" />
-                            </Link>
-                        ) : (
-                            <Link
-                                href={route('login')}
-                                className="text-gray-300 hover:text-white transition flex items-center gap-1"
-                            >
-                                <Lock className="w-3 h-3 text-[#DA7A31]" />
-                                <span>Employee / Student Login</span>
-                            </Link>
-                        )}
-                    </div>
-                </div>
-            </div>
-
             {/* Sticky Main Navigation */}
-            <header className="sticky top-0 z-50 bg-[#0B1C30]/95 backdrop-blur-md border-b border-white/10 shadow-md">
+            <header className="sticky top-0 z-50 bg-[#071220]/90 backdrop-blur-xl border-b border-white/10 shadow-lg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         {/* Logo */}
@@ -109,12 +91,12 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
                         </div>
 
                         {/* Desktop Navigation Links */}
-                        <nav className="hidden lg:flex items-center space-x-1">
+                        <nav className="hidden lg:flex items-center space-x-0.5 xl:space-x-1">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.name}
                                     href={link.href}
-                                    className={`px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${
+                                    className={`px-2.5 xl:px-3.5 py-2 text-xs xl:text-sm font-medium rounded-md transition-all duration-200 ${
                                         link.active
                                             ? 'text-white bg-[#132842] shadow-sm font-semibold'
                                             : 'text-gray-300 hover:text-white hover:bg-white/5'
@@ -129,7 +111,7 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
                                 <button
                                     onClick={() => setVerificationDropdown(!verificationDropdown)}
                                     onBlur={() => setTimeout(() => setVerificationDropdown(false), 200)}
-                                    className={`px-3.5 py-2 text-sm font-medium rounded-md flex items-center gap-1 transition-colors ${
+                                    className={`px-2.5 xl:px-3.5 py-2 text-xs xl:text-sm font-medium rounded-md flex items-center gap-1 transition-all duration-200 ${
                                         isVerificationActive
                                             ? 'text-[#DA7A31] bg-[#132842] font-semibold'
                                             : 'text-gray-300 hover:text-white hover:bg-white/5'
@@ -140,24 +122,28 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
                                 </button>
 
                                 {verificationDropdown && (
-                                    <div className="absolute right-0 mt-2 w-56 rounded-md shadow-xl bg-[#0B1C30] border border-white/10 py-1.5 z-50 animate-in fade-in slide-in-from-top-1">
+                                    <div className="absolute right-0 mt-2 w-60 rounded-xl shadow-2xl bg-[#0E223D] border border-white/10 py-2 z-50 animate-dropdown-enter backdrop-blur-xl">
                                         <Link
                                             href={route('public.verify-internship')}
-                                            className="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-200 hover:bg-[#DA7A31] hover:text-white transition"
+                                            className="flex items-center gap-3 px-4 py-3 text-xs text-gray-200 hover:bg-[#DA7A31] hover:text-white transition-all rounded-lg mx-1.5"
                                         >
-                                            <ShieldCheck className="w-4 h-4 text-[#DA7A31] group-hover:text-white" />
+                                            <div className="w-7 h-7 rounded-md bg-white/10 flex items-center justify-center shrink-0">
+                                                <ShieldCheck className="w-4 h-4 text-[#DA7A31] group-hover:text-white" />
+                                            </div>
                                             <div>
-                                                <div className="font-semibold">Verify Internship</div>
+                                                <div className="font-semibold text-white">Verify Internship</div>
                                                 <div className="text-[10px] text-gray-400">Validate student credentials</div>
                                             </div>
                                         </Link>
                                         <Link
                                             href={route('public.verify-attendance')}
-                                            className="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-200 hover:bg-[#DA7A31] hover:text-white transition"
+                                            className="flex items-center gap-3 px-4 py-3 text-xs text-gray-200 hover:bg-[#DA7A31] hover:text-white transition-all rounded-lg mx-1.5 mt-0.5"
                                         >
-                                            <CheckCircle2 className="w-4 h-4 text-[#DA7A31]" />
+                                            <div className="w-7 h-7 rounded-md bg-white/10 flex items-center justify-center shrink-0">
+                                                <CheckCircle2 className="w-4 h-4 text-[#DA7A31]" />
+                                            </div>
                                             <div>
-                                                <div className="font-semibold">Verify Attendance</div>
+                                                <div className="font-semibold text-white">Verify Attendance</div>
                                                 <div className="text-[10px] text-gray-400">Institutional record lookup</div>
                                             </div>
                                         </Link>
@@ -171,18 +157,18 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
                             {auth?.user ? (
                                 <Link
                                     href={route('dashboard')}
-                                    className="inline-flex items-center gap-2 bg-[#DA7A31] hover:bg-[#C2631D] text-white text-sm font-semibold px-4 py-2.5 rounded shadow transition duration-150"
+                                    className="lmc-btn lmc-btn-primary"
                                 >
                                     <span>Portal Access</span>
                                     <ArrowRight className="w-4 h-4" />
                                 </Link>
                             ) : (
                                 <Link
-                                    href={route('public.contact')}
-                                    className="inline-flex items-center gap-2 bg-[#DA7A31] hover:bg-[#C2631D] text-white text-sm font-semibold px-4 py-2.5 rounded shadow transition duration-150"
+                                    href={route('login')}
+                                    className="lmc-btn lmc-btn-primary"
                                 >
-                                    <span>Get In Touch</span>
-                                    <ArrowRight className="w-4 h-4" />
+                                    <Lock className="w-4 h-4" />
+                                    <span>Login</span>
                                 </Link>
                             )}
                         </div>
@@ -202,7 +188,7 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
 
                 {/* Mobile Drawer Menu */}
                 {mobileMenuOpen && (
-                    <div className="lg:hidden bg-[#071220] border-b border-white/10 px-4 pt-2 pb-6 space-y-1">
+                    <div className="lg:hidden bg-[#071220] border-b border-white/10 px-4 pt-2 pb-6 space-y-1 animate-dropdown-enter">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.name}
@@ -241,16 +227,17 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
                             {auth?.user ? (
                                 <Link
                                     href={route('dashboard')}
-                                    className="w-full text-center block bg-[#DA7A31] text-white font-semibold py-2.5 rounded shadow"
+                                    className="lmc-btn lmc-btn-primary w-full justify-center text-center"
                                 >
                                     Open Portal ({auth.user.name})
                                 </Link>
                             ) : (
                                 <Link
                                     href={route('login')}
-                                    className="w-full text-center block bg-[#DA7A31] text-white font-semibold py-2.5 rounded shadow"
+                                    className="lmc-btn lmc-btn-primary w-full justify-center text-center"
                                 >
-                                    Portal Login
+                                    <Lock className="w-4 h-4" />
+                                    <span>Portal Login</span>
                                 </Link>
                             )}
                         </div>
@@ -258,8 +245,8 @@ export default function PublicLayout({ children, title }: PublicLayoutProps) {
                 )}
             </header>
 
-            {/* Main Content Area */}
-            <main className="flex-grow">{children}</main>
+            {/* Main Content Area with Smooth Page Entrance Transition */}
+            <main key={url} className="flex-grow animate-page-enter">{children}</main>
 
             {/* Enterprise Footer */}
             <footer className="bg-[#0B1C30] text-gray-300 border-t-4 border-[#DA7A31]">

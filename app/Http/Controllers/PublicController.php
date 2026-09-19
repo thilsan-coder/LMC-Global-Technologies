@@ -48,11 +48,36 @@ class PublicController extends Controller
         ]);
     }
 
+    public function serviceDetail(Service $service): Response
+    {
+        $allServices = Service::where('status', 'Active')
+            ->select('id', 'name', 'slug', 'icon')
+            ->orderBy('display_order')
+            ->get();
+
+        return Inertia::render('Public/ServiceDetail', [
+            'service' => $service,
+            'allServices' => $allServices,
+        ]);
+    }
+
     public function products(): Response
     {
         $products = Product::orderBy('display_order')->get();
         return Inertia::render('Public/Products', [
             'products' => $products,
+        ]);
+    }
+
+    public function productArchitecture(Product $product): Response
+    {
+        $allProducts = Product::select('id', 'name', 'slug', 'status')
+            ->orderBy('display_order')
+            ->get();
+
+        return Inertia::render('Public/ProductArchitecture', [
+            'product' => $product,
+            'allProducts' => $allProducts,
         ]);
     }
 
@@ -68,6 +93,19 @@ class PublicController extends Controller
                 'total_approved' => $totalApproved,
                 'average_rating' => $averageRating,
                 'five_star_percentage' => $totalApproved > 0 ? round((Review::approved()->where('rating', 5)->count() / $totalApproved) * 100) : 100,
+            ],
+        ]);
+    }
+
+    public function createReview(): Response
+    {
+        $totalApproved = Review::approved()->count();
+        $averageRating = $totalApproved > 0 ? round(Review::approved()->avg('rating'), 1) : 5.0;
+
+        return Inertia::render('Public/SubmitReview', [
+            'metrics' => [
+                'total_approved' => $totalApproved,
+                'average_rating' => $averageRating,
             ],
         ]);
     }
