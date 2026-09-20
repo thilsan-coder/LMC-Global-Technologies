@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { CustomerItem } from '@/types';
@@ -15,13 +15,17 @@ import {
     Filter,
     Eye,
     MapPin,
-    Briefcase,
     ShieldCheck,
     CheckCircle2,
     XCircle,
     Activity,
-    TrendingUp,
+    Layers,
     AlertCircle,
+    User,
+    MoreVertical,
+    ChevronDown,
+    UploadCloud,
+    FileText,
 } from 'lucide-react';
 
 interface CustomersProps {
@@ -35,16 +39,51 @@ interface CustomersProps {
     filters: {
         search?: string;
         status?: string;
+        industry?: string;
     };
 }
+
+const INDUSTRY_OPTIONS = [
+    'Logistics & Supply Chain',
+    'Healthcare & MedTech',
+    'CleanTech & IoT',
+    'Software & Cloud Architecture',
+    'FinTech & Financial Services',
+    'Retail & E-Commerce',
+    'Education & Academics',
+    'Manufacturing & Industrial',
+    'Other Enterprise Sector',
+];
 
 export default function Customers({ customers, filters }: CustomersProps) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || '');
+    const [industryFilter, setIndustryFilter] = useState(filters.industry || '');
+
     const [modalOpen, setModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<CustomerItem | null>(null);
     const [viewingCustomer, setViewingCustomer] = useState<CustomerItem | null>(null);
     const [deletingCustomer, setDeletingCustomer] = useState<CustomerItem | null>(null);
+
+    // Active row action dropdown state (c.id or null)
+    const [openActionId, setOpenActionId] = useState<number | null>(null);
+
+    // Form attachment drag-and-drop state inside Registration modal
+    const [attachedFile, setAttachedFile] = useState<File | null>(null);
+    const [attachedDragActive, setAttachedDragActive] = useState(false);
+
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    // Close action menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setOpenActionId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const { data, setData, post, put, processing, reset, errors, clearErrors } = useForm({
         name: '',
@@ -52,49 +91,60 @@ export default function Customers({ customers, filters }: CustomersProps) {
         email: '',
         phone: '',
         address: '',
-        industry: '',
+        industry: INDUSTRY_OPTIONS[0],
         status: 'active' as 'active' | 'inactive',
         notes: '',
     });
 
-    // KPI Metrics calculation
+    // Dynamic metrics calculation
     const totalCustomers = customers.total || 0;
     const activeCustomersCount = customers.data.filter((c) => c.status === 'active').length;
     const inactiveCustomersCount = customers.data.filter((c) => c.status === 'inactive').length;
+    const uniqueIndustriesCount = new Set(customers.data.map((c) => c.industry).filter(Boolean)).size;
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSearch = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         router.get(
             route('admin.crm.customers'),
-            { search: searchTerm, status: statusFilter },
+            {
+                search: searchTerm,
+                status: statusFilter,
+                industry: industryFilter,
+            },
             { preserveState: true }
         );
     };
 
-    const handleClearFilters = () => {
-        setSearchTerm('');
-        setStatusFilter('');
-        router.get(route('admin.crm.customers'), {}, { preserveState: true });
-    };
-
     const openCreate = () => {
         setEditingCustomer(null);
+        setAttachedFile(null);
         clearErrors();
         reset();
+        setData({
+            name: '',
+            company: '',
+            email: '',
+            phone: '',
+            address: '',
+            industry: INDUSTRY_OPTIONS[0],
+            status: 'active',
+            notes: '',
+        });
         setModalOpen(true);
     };
 
     const openEdit = (customer: CustomerItem) => {
         setEditingCustomer(customer);
+        setAttachedFile(null);
         clearErrors();
         setData({
-            name: customer.name,
+            name: customer.name || '',
             company: customer.company || '',
             email: customer.email || '',
             phone: customer.phone || '',
             address: customer.address || '',
-            industry: customer.industry || '',
-            status: customer.status,
+            industry: customer.industry || INDUSTRY_OPTIONS[0],
+            status: customer.status || 'active',
             notes: customer.notes || '',
         });
         setModalOpen(true);
@@ -120,29 +170,54 @@ export default function Customers({ customers, filters }: CustomersProps) {
     };
 
     const confirmDelete = () => {
-        if (deletingCustomer) {
-            router.delete(route('admin.crm.customers.destroy', deletingCustomer.id), {
-                onSuccess: () => setDeletingCustomer(null),
-            });
+        if (!deletingCustomer) return;
+        router.delete(route('admin.crm.customers.destroy', deletingCustomer.id), {
+            onSuccess: () => setDeletingCustomer(null),
+        });
+    };
+
+    // Modal attachment drag-and-drop file handlers
+    const handleAttachedDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setAttachedDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setAttachedDragActive(false);
+        }
+    };
+
+    const handleAttachedDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setAttachedDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setAttachedFile(e.dataTransfer.files[0]);
+        }
+    };
+
+    const handleAttachedFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setAttachedFile(e.target.files[0]);
         }
     };
 
     return (
         <AdminLayout title="Enterprise Customers" subtitle="Account Roster & Portfolio CRM">
-            <Head title="Enterprise Customers - CRM Portal" />
+            <Head title="Customers - Enterprise CRM" />
 
             <div className="space-y-6">
-                {/* Executive Summary Metrics Header */}
+                {/* 1. EXECUTIVE METRICS SUMMARY */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+                    <div className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
                         <div>
                             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 Total Accounts
                             </div>
                             <div className="text-2xl font-bold text-[#0B1C30] mt-1">{totalCustomers}</div>
                             <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
-                                <Building2 className="w-3 h-3 text-[#DA7A31]" />
-                                <span>Enterprise Client Base</span>
+                                <Building2 className="w-3.5 h-3.5 text-[#DA7A31]" />
+                                <span>Corporate Accounts</span>
                             </div>
                         </div>
                         <div className="w-12 h-12 rounded-xl bg-[#0B1C30]/5 border border-[#0B1C30]/10 flex items-center justify-center text-[#0B1C30]">
@@ -150,7 +225,7 @@ export default function Customers({ customers, filters }: CustomersProps) {
                         </div>
                     </div>
 
-                    <div className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+                    <div className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
                         <div>
                             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 Active Retainers
@@ -159,8 +234,8 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                 {activeCustomersCount}
                             </div>
                             <div className="text-[11px] text-emerald-700/80 mt-1 flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                                <span>Active SLA Retainer</span>
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Active Retainer SLA</span>
                             </div>
                         </div>
                         <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
@@ -168,107 +243,131 @@ export default function Customers({ customers, filters }: CustomersProps) {
                         </div>
                     </div>
 
-                    <div className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+                    <div className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
                         <div>
                             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                On Hold / Inactive
+                                Inactive Accounts
                             </div>
-                            <div className="text-2xl font-bold text-gray-700 mt-1">
+                            <div className="text-2xl font-bold text-slate-700 mt-1">
                                 {inactiveCustomersCount}
                             </div>
-                            <div className="text-[11px] text-gray-500 mt-1 flex items-center gap-1">
-                                <XCircle className="w-3 h-3 text-gray-400" />
-                                <span>Pending Renewal / Offboarding</span>
+                            <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+                                <XCircle className="w-3.5 h-3.5 text-slate-400" />
+                                <span>Pending Renewal</span>
                             </div>
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-600">
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
                             <XCircle className="w-6 h-6" />
                         </div>
                     </div>
 
-                    <div className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+                    <div className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-2xs flex items-center justify-between">
                         <div>
                             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                SLA Satisfaction
+                                Industry Sectors
                             </div>
-                            <div className="text-2xl font-bold text-[#DA7A31] mt-1">99.2%</div>
-                            <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
-                                <TrendingUp className="w-3 h-3 text-[#DA7A31]" />
-                                <span>High Enterprise Trust</span>
+                            <div className="text-2xl font-bold text-indigo-600 mt-1">{uniqueIndustriesCount} Sectors</div>
+                            <div className="text-[11px] text-indigo-600/80 mt-1 flex items-center gap-1">
+                                <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                                <span>Cross-Industry Portfolio</span>
                             </div>
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-[#DA7A31]/10 border border-[#DA7A31]/20 flex items-center justify-center text-[#DA7A31]">
-                            <ShieldCheck className="w-6 h-6" />
+                        <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600">
+                            <Layers className="w-6 h-6" />
                         </div>
                     </div>
                 </div>
 
-                {/* Filter Toolbar & Action Bar */}
-                <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
-                    <form onSubmit={handleSearch} className="flex flex-1 flex-col sm:flex-row items-center gap-3 w-full">
-                        {/* Search input with left icon */}
-                        <div className="relative flex-1 w-full">
-                            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search by client name, company, email, or industry..."
-                                className="w-full pl-10 pr-4 py-2 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-gray-50/50"
-                            />
-                        </div>
+                {/* 2. FILTER TOOLBAR & REGISTER BUTTON WITH CLEAN WHITE SELECT CONTROLS */}
+                <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-2xs">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        {/* Search & Select Filters */}
+                        <form onSubmit={handleSearch} className="flex flex-1 flex-col sm:flex-row items-center gap-3 w-full">
+                            {/* Search Bar */}
+                            <div className="relative flex-1 w-full">
+                                <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Search by company, contact person, email, or industry..."
+                                    className="w-full pl-10 pr-4 py-2.5 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 placeholder:text-gray-400 shadow-2xs"
+                                />
+                            </div>
 
-                        {/* Status Filter */}
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="w-full sm:w-auto text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] py-2 bg-gray-50/50"
-                            >
-                                <option value="">All Account Statuses</option>
-                                <option value="active">Active Retainer</option>
-                                <option value="inactive">Inactive / On Hold</option>
-                            </select>
+                            {/* Status Filter Dropdown with Inset Chevron */}
+                            <div className="relative w-full sm:w-auto shrink-0">
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => {
+                                        setStatusFilter(e.target.value);
+                                        router.get(
+                                            route('admin.crm.customers'),
+                                            { search: searchTerm, status: e.target.value, industry: industryFilter },
+                                            { preserveState: true }
+                                        );
+                                    }}
+                                    className="w-full sm:w-auto appearance-none text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] py-2.5 pl-3.5 pr-10 bg-white text-gray-900 cursor-pointer shadow-2xs"
+                                >
+                                    <option value="">All Account Statuses</option>
+                                    <option value="active">Active Retainer</option>
+                                    <option value="inactive">Inactive / On Hold</option>
+                                </select>
+                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none z-10" />
+                            </div>
+
+                            {/* Industry Filter Dropdown with Inset Chevron */}
+                            <div className="relative w-full sm:w-auto shrink-0">
+                                <select
+                                    value={industryFilter}
+                                    onChange={(e) => {
+                                        setIndustryFilter(e.target.value);
+                                        router.get(
+                                            route('admin.crm.customers'),
+                                            { search: searchTerm, status: statusFilter, industry: e.target.value },
+                                            { preserveState: true }
+                                        );
+                                    }}
+                                    className="w-full sm:w-auto appearance-none text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] py-2.5 pl-3.5 pr-10 bg-white text-gray-900 cursor-pointer shadow-2xs"
+                                >
+                                    <option value="">All Industry Sectors</option>
+                                    {INDUSTRY_OPTIONS.map((ind) => (
+                                        <option key={ind} value={ind}>
+                                            {ind}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none z-10" />
+                            </div>
 
                             <button
                                 type="submit"
-                                className="lmc-btn lmc-btn-navy lmc-btn-sm shrink-0"
+                                className="lmc-btn lmc-btn-navy lmc-btn-sm shrink-0 w-full sm:w-auto justify-center rounded-xl"
                             >
                                 <Filter className="w-3.5 h-3.5" />
                                 <span>Filter</span>
                             </button>
+                        </form>
 
-                            {(searchTerm || statusFilter) && (
-                                <button
-                                    type="button"
-                                    onClick={handleClearFilters}
-                                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
-                                    title="Reset Filters"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            )}
-                        </div>
-                    </form>
-
-                    {/* Primary New Customer Button */}
-                    <button
-                        onClick={openCreate}
-                        className="w-full md:w-auto lmc-btn lmc-btn-primary lmc-btn-sm shrink-0 shadow-xs"
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span>Add New Customer</span>
-                    </button>
+                        {/* Primary Add Button */}
+                        <button
+                            onClick={openCreate}
+                            className="lmc-btn lmc-btn-primary lmc-btn-sm shrink-0 shadow-2xs w-full lg:w-auto justify-center rounded-xl"
+                        >
+                            <Plus className="w-4 h-4" />
+                            <span>Register New Customer</span>
+                        </button>
+                    </div>
                 </div>
 
-                {/* Customers Table Card */}
-                <div className="bg-white rounded-xl border border-gray-200/80 shadow-xs overflow-hidden">
-                    <div className="overflow-x-auto">
+                {/* 3. CLEAN CUSTOMER ACCOUNTS TABLE WITH UN-CLIPPED ACTIONS (⋮) DROPDOWN */}
+                <div className="bg-white rounded-xl border border-gray-200/80 shadow-2xs min-h-[420px] overflow-visible" ref={menuRef}>
+                    <div className="overflow-x-auto overflow-y-visible pb-16">
                         <table className="w-full text-left text-xs text-[#4D4B55]">
                             <thead className="bg-[#0B1C30] text-white font-bold uppercase tracking-wider text-[10px]">
                                 <tr>
                                     <th className="py-3.5 px-5">Enterprise Client Account</th>
-                                    <th className="py-3.5 px-5">Contact Coordinates</th>
+                                    <th className="py-3.5 px-5">Contact Details</th>
                                     <th className="py-3.5 px-5">Industry Sector</th>
                                     <th className="py-3.5 px-5">SLA Status</th>
                                     <th className="py-3.5 px-5 text-right">Actions</th>
@@ -290,103 +389,145 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    customers.data.map((c) => (
-                                        <tr key={c.id} className="hover:bg-blue-50/30 transition-colors">
-                                            {/* Client Name & Company */}
-                                            <td className="py-4 px-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-lg bg-[#0B1C30] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                                                        {c.name.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <div
-                                                            className="font-bold text-[#0B1C30] text-sm hover:text-[#DA7A31] transition-colors cursor-pointer"
-                                                            onClick={() => setViewingCustomer(c)}
-                                                        >
-                                                            {c.name}
+                                    customers.data.map((c, idx) => {
+                                        const companyTitle = c.company || c.name;
+                                        const contactPerson = c.name;
+                                        const isMenuOpen = openActionId === c.id;
+                                        // Open upward for bottom rows so menu is NEVER clipped by table bottom
+                                        const openUpward = idx >= customers.data.length - 1 || idx >= 2;
+
+                                        return (
+                                            <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                                                {/* Client Company Title & Contact Person Subtitle */}
+                                                <td className="py-4 px-5">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="w-9 h-9 rounded-lg bg-[#0B1C30] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs mt-0.5">
+                                                            {companyTitle.charAt(0)}
                                                         </div>
-                                                        <div className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
-                                                            <Building2 className="w-3 h-3 text-[#DA7A31]" />
-                                                            <span className="font-medium">{c.company || 'Private Account'}</span>
+                                                        <div>
+                                                            <div
+                                                                className="font-bold text-[#0B1C30] text-sm hover:text-[#DA7A31] transition-colors cursor-pointer"
+                                                                onClick={() => setViewingCustomer(c)}
+                                                            >
+                                                                {companyTitle}
+                                                            </div>
+                                                            <div className="text-[11px] text-gray-600 flex items-center gap-1.5 mt-0.5">
+                                                                <User className="w-3 h-3 text-[#DA7A31] shrink-0" />
+                                                                <span className="font-medium">Contact: {contactPerson}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </td>
+                                                </td>
 
-                                            {/* Email & Phone */}
-                                            <td className="py-4 px-5 space-y-1">
-                                                {c.email ? (
-                                                    <div className="flex items-center gap-1.5 text-gray-700">
-                                                        <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                                                        <a href={`mailto:${c.email}`} className="hover:underline hover:text-[#DA7A31]">
-                                                            {c.email}
-                                                        </a>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-gray-400 italic">No email provided</span>
-                                                )}
-                                                {c.phone && (
-                                                    <div className="flex items-center gap-1.5 text-gray-500 text-[11px]">
-                                                        <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                                                        <span>{c.phone}</span>
-                                                    </div>
-                                                )}
-                                            </td>
+                                                {/* Email & Phone */}
+                                                <td className="py-4 px-5 space-y-1">
+                                                    {c.email ? (
+                                                        <div className="flex items-center gap-1.5 text-gray-700">
+                                                            <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                            <a href={`mailto:${c.email}`} className="hover:underline hover:text-[#DA7A31]">
+                                                                {c.email}
+                                                            </a>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-gray-400 italic">No email provided</span>
+                                                    )}
+                                                    {c.phone && (
+                                                        <div className="flex items-center gap-1.5 text-gray-600 text-[11px]">
+                                                            <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                            <span>{c.phone}</span>
+                                                        </div>
+                                                    )}
+                                                </td>
 
-                                            {/* Industry */}
-                                            <td className="py-4 px-5">
-                                                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-                                                    <Briefcase className="w-3 h-3 mr-1 text-[#0B1C30]" />
-                                                    {c.industry || 'General IT'}
-                                                </span>
-                                            </td>
+                                                {/* Industry */}
+                                                <td className="py-4 px-5">
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">
+                                                        <Layers className="w-3.5 h-3.5 mr-1.5 text-[#0B1C30]" />
+                                                        {c.industry || 'General IT'}
+                                                    </span>
+                                                </td>
 
-                                            {/* Status Badge */}
-                                            <td className="py-4 px-5">
-                                                <span
-                                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                                                        c.status === 'active'
-                                                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                                            : 'bg-gray-100 text-gray-600 border border-gray-200'
-                                                    }`}
-                                                >
+                                                {/* Status Badge */}
+                                                <td className="py-4 px-5">
                                                     <span
-                                                        className={`w-1.5 h-1.5 rounded-full ${
-                                                            c.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'
+                                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                                                            c.status === 'active'
+                                                                ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                                                                : 'bg-slate-100 text-slate-800 border border-slate-300'
                                                         }`}
-                                                    />
-                                                    {c.status}
-                                                </span>
-                                            </td>
+                                                    >
+                                                        <span
+                                                            className={`w-1.5 h-1.5 rounded-full ${
+                                                                c.status === 'active' ? 'bg-emerald-600 animate-pulse' : 'bg-slate-500'
+                                                            }`}
+                                                        />
+                                                        {c.status}
+                                                    </span>
+                                                </td>
 
-                                            {/* Actions */}
-                                            <td className="py-4 px-5 text-right">
-                                                <div className="flex items-center justify-end gap-1.5">
-                                                    <button
-                                                        onClick={() => setViewingCustomer(c)}
-                                                        className="p-1.5 text-gray-500 hover:text-[#0B1C30] hover:bg-gray-100 rounded-lg transition"
-                                                        title="View Details"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openEdit(c)}
-                                                        className="p-1.5 text-gray-500 hover:text-[#DA7A31] hover:bg-orange-50 rounded-lg transition"
-                                                        title="Edit Customer"
-                                                    >
-                                                        <Edit2 className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setDeletingCustomer(c)}
-                                                        className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
-                                                        title="Delete Customer"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
+                                                {/* UN-CLIPPED ACTIONS (⋮) DROPDOWN MENU WITH EXACT VIEW / EDIT / DELETE LABELS */}
+                                                <td className="py-4 px-5 text-right relative">
+                                                    <div className="relative inline-block text-left">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setOpenActionId(isMenuOpen ? null : c.id)}
+                                                            className={`p-2 rounded-lg transition-colors border ${
+                                                                isMenuOpen
+                                                                    ? 'bg-[#0B1C30] text-white border-[#0B1C30]'
+                                                                    : 'text-gray-600 hover:text-[#0B1C30] hover:bg-gray-100 border-gray-200'
+                                                            }`}
+                                                            title="Customer Actions"
+                                                        >
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </button>
+
+                                                        {isMenuOpen && (
+                                                            <div
+                                                                className={`absolute right-0 w-36 bg-white rounded-xl shadow-2xl border border-gray-200 py-1.5 z-50 animate-fadeIn text-left font-normal ${
+                                                                    openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                                                }`}
+                                                            >
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenActionId(null);
+                                                                        setViewingCustomer(c);
+                                                                    }}
+                                                                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-gray-700 hover:bg-slate-50 hover:text-[#0B1C30] transition font-medium"
+                                                                >
+                                                                    <Eye className="w-4 h-4 text-slate-500" />
+                                                                    <span>View</span>
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenActionId(null);
+                                                                        openEdit(c);
+                                                                    }}
+                                                                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-amber-800 hover:bg-amber-50 hover:text-amber-900 transition font-medium"
+                                                                >
+                                                                    <Edit2 className="w-4 h-4 text-amber-600" />
+                                                                    <span>Edit</span>
+                                                                </button>
+                                                                <div className="my-1 border-t border-gray-100" />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenActionId(null);
+                                                                        setDeletingCustomer(c);
+                                                                    }}
+                                                                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-rose-700 hover:bg-rose-50 hover:text-rose-900 transition font-medium"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4 text-rose-600" />
+                                                                    <span>Delete</span>
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>
@@ -398,7 +539,7 @@ export default function Customers({ customers, filters }: CustomersProps) {
                             <div>
                                 Showing <span className="font-semibold text-[#0B1C30]">{customers.from || 1}</span> to{' '}
                                 <span className="font-semibold text-[#0B1C30]">{customers.to || customers.data.length}</span> of{' '}
-                                <span className="font-semibold text-[#0B1C30]">{customers.total}</span> enterprise customer accounts
+                                <span className="font-semibold text-[#0B1C30]">{customers.total}</span> enterprise accounts
                             </div>
                             <div className="flex flex-wrap gap-1">
                                 {customers.links.map((link, idx) => (
@@ -409,7 +550,7 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                         className={`px-3 py-1.5 rounded-md text-xs transition-all ${
                                             link.active
-                                                ? 'bg-[#0B1C30] text-white font-bold shadow-xs'
+                                                ? 'bg-[#0B1C30] text-white font-bold shadow-2xs'
                                                 : link.url
                                                 ? 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
                                                 : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
@@ -422,7 +563,7 @@ export default function Customers({ customers, filters }: CustomersProps) {
                 </div>
             </div>
 
-            {/* CREATE / EDIT CUSTOMER MODAL */}
+            {/* 4. REGISTER / EDIT CUSTOMER MODAL WITH PROFESSIONAL DRAG-AND-DROP DESIGN & CLEAN WHITE INPUTS */}
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
                     <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-gray-200 relative max-h-[90vh] flex flex-col">
@@ -434,12 +575,12 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                 </div>
                                 <div>
                                     <h3 className="text-base font-bold tracking-tight">
-                                        {editingCustomer ? 'Edit Enterprise Customer Account' : 'Register New Enterprise Customer'}
+                                        {editingCustomer ? 'Edit Customer Account' : 'Register New Customer'}
                                     </h3>
                                     <p className="text-xs text-gray-300">
                                         {editingCustomer
-                                            ? `Updating CRM record for ${editingCustomer.name}`
-                                            : 'Fill in corporate details to add an enterprise account to the CRM'}
+                                            ? `Updating details for ${editingCustomer.company || editingCustomer.name}`
+                                            : 'Fill in essential details to register an enterprise customer account'}
                                     </p>
                                 </div>
                             </div>
@@ -451,188 +592,272 @@ export default function Customers({ customers, filters }: CustomersProps) {
                             </button>
                         </div>
 
-                        {/* Modal Body Form */}
-                        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 text-xs flex-1">
-                            {/* Section 1: Basic Profile & Enterprise Info */}
-                            <div>
-                                <div className="text-[11px] font-bold text-[#DA7A31] uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <Users className="w-4 h-4" />
-                                    <span>1. Primary Account & Organization Details</span>
+                        {/* Form Body */}
+                        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                            <div className="p-6 overflow-y-auto space-y-6 text-xs flex-1 text-gray-900">
+                                {/* SECTION 1: CORPORATE INFORMATION */}
+                                <div>
+                                    <div className="text-[11px] font-bold text-[#DA7A31] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <Building2 className="w-4 h-4" />
+                                        <span>1. Corporate Information</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Company Name */}
+                                        <div>
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                Company / Organization Name <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="relative">
+                                                <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                                                <input
+                                                    type="text"
+                                                    value={data.company}
+                                                    onChange={(e) => setData('company', e.target.value)}
+                                                    placeholder="e.g. Apex Global Logistics Ltd"
+                                                    required
+                                                    className="w-full pl-10 pr-4 py-2.5 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 placeholder:text-gray-400 shadow-2xs"
+                                                />
+                                            </div>
+                                            {errors.company && <p className="text-red-500 text-[11px] mt-1">{errors.company}</p>}
+                                        </div>
+
+                                        {/* Industry Sector Dropdown with Zero Icon Overlap & Inset Chevron */}
+                                        <div>
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                Industry Sector <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="relative">
+                                                <Layers className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none z-10" />
+                                                <select
+                                                    value={data.industry}
+                                                    onChange={(e) => setData('industry', e.target.value)}
+                                                    required
+                                                    className="w-full appearance-none pl-10 pr-10 py-2.5 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 cursor-pointer shadow-2xs"
+                                                >
+                                                    {INDUSTRY_OPTIONS.map((opt) => (
+                                                        <option key={opt} value={opt}>
+                                                            {opt}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none z-10" />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Customer / Contact Name */}
-                                    <div className="md:col-span-2">
-                                        <label className="block font-semibold text-[#0B1C30] mb-1">
-                                            Contact Person Name <span className="text-red-500">*</span>
-                                        </label>
+
+                                {/* SECTION 2: PRIMARY CONTACT DETAILS */}
+                                <div className="pt-4 border-t border-gray-100">
+                                    <div className="text-[11px] font-bold text-[#DA7A31] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <User className="w-4 h-4" />
+                                        <span>2. Primary Contact Details</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Contact Person Name */}
+                                        <div>
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                Contact Person Name <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="relative">
+                                                <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                                                <input
+                                                    type="text"
+                                                    value={data.name}
+                                                    onChange={(e) => setData('name', e.target.value)}
+                                                    placeholder="e.g. Duminda Bandara"
+                                                    required
+                                                    className="w-full pl-10 pr-4 py-2.5 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 placeholder:text-gray-400 shadow-2xs"
+                                                />
+                                            </div>
+                                            {errors.name && <p className="text-red-500 text-[11px] mt-1">{errors.name}</p>}
+                                        </div>
+
+                                        {/* Corporate Email */}
+                                        <div>
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                Corporate Email Address <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="relative">
+                                                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                                                <input
+                                                    type="email"
+                                                    value={data.email}
+                                                    onChange={(e) => setData('email', e.target.value)}
+                                                    placeholder="e.g. contact@apexlogistics.lk"
+                                                    required
+                                                    className="w-full pl-10 pr-4 py-2.5 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 placeholder:text-gray-400 shadow-2xs"
+                                                />
+                                            </div>
+                                            {errors.email && <p className="text-red-500 text-[11px] mt-1">{errors.email}</p>}
+                                        </div>
+
+                                        {/* Phone */}
+                                        <div>
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                Contact Phone Number
+                                            </label>
+                                            <div className="relative">
+                                                <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                                                <input
+                                                    type="text"
+                                                    value={data.phone}
+                                                    onChange={(e) => setData('phone', e.target.value)}
+                                                    placeholder="e.g. +94 11 789 4400"
+                                                    className="w-full pl-10 pr-4 py-2.5 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 placeholder:text-gray-400 shadow-2xs"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Address */}
+                                        <div>
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                Headquarters Address
+                                            </label>
+                                            <div className="relative">
+                                                <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                                                <input
+                                                    type="text"
+                                                    value={data.address}
+                                                    onChange={(e) => setData('address', e.target.value)}
+                                                    placeholder="e.g. Level 18, World Trade Center, Colombo 01"
+                                                    className="w-full pl-10 pr-4 py-2.5 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 placeholder:text-gray-400 shadow-2xs"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SECTION 3: SLA & ACCOUNT STATUS WITH PROFESSIONAL DRAG & DROP ATTACHMENT AREA */}
+                                <div className="pt-4 border-t border-gray-100 space-y-4">
+                                    <div className="text-[11px] font-bold text-[#DA7A31] uppercase tracking-wider mb-1 flex items-center gap-2">
+                                        <ShieldCheck className="w-4 h-4" />
+                                        <span>3. SLA Status & Account Notes</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="relative">
-                                            <Users className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
-                                            <input
-                                                type="text"
-                                                value={data.name}
-                                                onChange={(e) => setData('name', e.target.value)}
-                                                placeholder="e.g. Alexander Wright"
-                                                required
-                                                className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31]"
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                Account Status <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="relative">
+                                                <select
+                                                    value={data.status}
+                                                    onChange={(e) => setData('status', e.target.value as 'active' | 'inactive')}
+                                                    className="w-full appearance-none py-2.5 pl-3.5 pr-10 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 cursor-pointer shadow-2xs"
+                                                >
+                                                    <option value="active">Active Retainer</option>
+                                                    <option value="inactive">Inactive / On Hold</option>
+                                                </select>
+                                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none z-10" />
+                                            </div>
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                SLA Deliverables & Account Notes
+                                            </label>
+                                            <textarea
+                                                rows={2}
+                                                value={data.notes}
+                                                onChange={(e) => setData('notes', e.target.value)}
+                                                placeholder="e.g. Enterprise SLA agreement active covering cloud deployment and support."
+                                                className="w-full p-3 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 placeholder:text-gray-400 shadow-2xs"
                                             />
                                         </div>
-                                        {errors.name && <p className="text-red-500 text-[11px] mt-1">{errors.name}</p>}
-                                    </div>
 
-                                    {/* Company Name */}
-                                    <div>
-                                        <label className="block font-semibold text-[#0B1C30] mb-1">
-                                            Company / Organization Name
-                                        </label>
-                                        <div className="relative">
-                                            <Building2 className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
-                                            <input
-                                                type="text"
-                                                value={data.company}
-                                                onChange={(e) => setData('company', e.target.value)}
-                                                placeholder="e.g. Apex Global Systems"
-                                                className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31]"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Industry */}
-                                    <div>
-                                        <label className="block font-semibold text-[#0B1C30] mb-1">
-                                            Industry Sector
-                                        </label>
-                                        <div className="relative">
-                                            <Briefcase className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
-                                            <input
-                                                type="text"
-                                                value={data.industry}
-                                                onChange={(e) => setData('industry', e.target.value)}
-                                                placeholder="e.g. CleanTech, Logistics, FinTech"
-                                                className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31]"
-                                            />
+                                        {/* Professional Drag-and-Drop Upload Section */}
+                                        <div className="md:col-span-2 pt-2">
+                                            <label className="block font-semibold text-[#0B1C30] mb-1">
+                                                Customer File Attachment (Optional)
+                                            </label>
+                                            <div
+                                                onDragEnter={handleAttachedDrag}
+                                                onDragLeave={handleAttachedDrag}
+                                                onDragOver={handleAttachedDrag}
+                                                onDrop={handleAttachedDrop}
+                                                className={`border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer ${
+                                                    attachedDragActive
+                                                        ? 'border-[#DA7A31] bg-orange-50/50 scale-[1.002]'
+                                                        : attachedFile
+                                                        ? 'border-emerald-300 bg-emerald-50/40'
+                                                        : 'border-gray-300 hover:border-[#DA7A31] bg-slate-50/60'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="file"
+                                                    id="customerAttachmentInput"
+                                                    accept=".pdf, .doc, .docx"
+                                                    onChange={handleAttachedFileSelect}
+                                                    className="hidden"
+                                                />
+                                                <label htmlFor="customerAttachmentInput" className="cursor-pointer block">
+                                                    {attachedFile ? (
+                                                        <div className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-emerald-200 shadow-2xs">
+                                                            <div className="flex items-center gap-2.5">
+                                                                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                                                                    <FileText className="w-4 h-4" />
+                                                                </div>
+                                                                <div className="text-left">
+                                                                    <div className="text-xs font-bold text-gray-800">{attachedFile.name}</div>
+                                                                    <div className="text-[10px] text-gray-500">
+                                                                        {(attachedFile.size / 1024).toFixed(1)} KB — Attached
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setAttachedFile(null);
+                                                                }}
+                                                                className="text-xs text-red-600 hover:underline font-semibold"
+                                                            >
+                                                                Remove File
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center justify-center gap-3 py-1">
+                                                            <div className="w-9 h-9 rounded-lg bg-[#DA7A31]/10 text-[#DA7A31] flex items-center justify-center shrink-0 border border-[#DA7A31]/20">
+                                                                <UploadCloud className="w-4 h-4" />
+                                                            </div>
+                                                            <div className="text-left">
+                                                                <div className="text-xs font-bold text-[#0B1C30]">
+                                                                    Drag & drop document file here, or <span className="text-[#DA7A31] underline font-semibold">browse files</span>
+                                                                </div>
+                                                                <div className="text-[10px] text-gray-500">
+                                                                    PDF or DOCX up to 5MB
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Section 2: Contact Coordinates */}
-                            <div className="pt-4 border-t border-gray-100">
-                                <div className="text-[11px] font-bold text-[#DA7A31] uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <Mail className="w-4 h-4" />
-                                    <span>2. Communication & Location Coordinates</span>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Email */}
-                                    <div>
-                                        <label className="block font-semibold text-[#0B1C30] mb-1">
-                                            Corporate Email Address
-                                        </label>
-                                        <div className="relative">
-                                            <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
-                                            <input
-                                                type="email"
-                                                value={data.email}
-                                                onChange={(e) => setData('email', e.target.value)}
-                                                placeholder="alexander@apexsystems.com"
-                                                className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31]"
-                                            />
-                                        </div>
-                                        {errors.email && <p className="text-red-500 text-[11px] mt-1">{errors.email}</p>}
-                                    </div>
-
-                                    {/* Phone */}
-                                    <div>
-                                        <label className="block font-semibold text-[#0B1C30] mb-1">
-                                            Contact Phone Number
-                                        </label>
-                                        <div className="relative">
-                                            <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
-                                            <input
-                                                type="text"
-                                                value={data.phone}
-                                                onChange={(e) => setData('phone', e.target.value)}
-                                                placeholder="+1 (555) 234-5678"
-                                                className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31]"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Address */}
-                                    <div className="md:col-span-2">
-                                        <label className="block font-semibold text-[#0B1C30] mb-1">
-                                            Headquarters / Office Address
-                                        </label>
-                                        <div className="relative">
-                                            <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
-                                            <input
-                                                type="text"
-                                                value={data.address}
-                                                onChange={(e) => setData('address', e.target.value)}
-                                                placeholder="e.g. 100 Enterprise Way, Suite 400, New York, NY"
-                                                className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31]"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Section 3: Status & SLA Governance */}
-                            <div className="pt-4 border-t border-gray-100">
-                                <div className="text-[11px] font-bold text-[#DA7A31] uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <ShieldCheck className="w-4 h-4" />
-                                    <span>3. Account Status & SLA Requirements</span>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Status */}
-                                    <div>
-                                        <label className="block font-semibold text-[#0B1C30] mb-1">
-                                            Account SLA Status <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={data.status}
-                                            onChange={(e) => setData('status', e.target.value as 'active' | 'inactive')}
-                                            className="w-full py-2 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31]"
-                                        >
-                                            <option value="active">Active Retainer</option>
-                                            <option value="inactive">Inactive / On Hold</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Notes */}
-                                    <div className="md:col-span-2">
-                                        <label className="block font-semibold text-[#0B1C30] mb-1">
-                                            SLA Terms, Deliverables & Internal Notes
-                                        </label>
-                                        <textarea
-                                            rows={3}
-                                            value={data.notes}
-                                            onChange={(e) => setData('notes', e.target.value)}
-                                            placeholder="Enter contract scope summary, preferred communication channel, or specific SLA deliverables..."
-                                            className="w-full p-3 text-xs rounded-lg border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31]"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Form Footer Buttons */}
-                            <div className="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
+                            {/* STICKY FOOTER WITH HIGH CONTRAST CLEARLY VISIBLE BUTTONS */}
+                            <div className="shrink-0 bg-gray-50 border-t border-gray-200 p-4 flex items-center justify-end gap-3 z-20">
                                 <button
                                     type="button"
                                     onClick={() => setModalOpen(false)}
-                                    className="lmc-btn lmc-btn-secondary lmc-btn-sm"
+                                    className="px-5 py-2.5 text-xs font-bold text-[#0B1C30] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-xl transition-all shadow-2xs"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="lmc-btn lmc-btn-primary lmc-btn-sm shadow-sm"
+                                    className="px-6 py-2.5 text-xs font-bold text-white bg-[#DA7A31] hover:bg-[#c66a27] rounded-xl shadow-md transition-all flex items-center gap-2"
                                 >
-                                    {processing
-                                        ? 'Saving Details...'
-                                        : editingCustomer
-                                        ? 'Update Customer Account'
-                                        : 'Save Customer Account'}
+                                    <CheckCircle2 className="w-4 h-4 text-white" />
+                                    <span>
+                                        {processing
+                                            ? 'Saving Account...'
+                                            : editingCustomer
+                                            ? 'Update Customer Account'
+                                            : 'Save Customer Account'}
+                                    </span>
                                 </button>
                             </div>
                         </form>
@@ -640,7 +865,7 @@ export default function Customers({ customers, filters }: CustomersProps) {
                 </div>
             )}
 
-            {/* VIEW CUSTOMER DETAIL MODAL */}
+            {/* VIEW PROFILE MODAL */}
             {viewingCustomer && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
                     <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-gray-200 relative">
@@ -653,35 +878,35 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                 <X className="w-5 h-5" />
                             </button>
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-[#DA7A31] text-white flex items-center justify-center font-bold text-xl shadow-md">
-                                    {viewingCustomer.name.charAt(0)}
+                                <div className="w-14 h-14 rounded-2xl bg-[#DA7A31] text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
+                                    {(viewingCustomer.company || viewingCustomer.name).charAt(0)}
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold">{viewingCustomer.name}</h3>
+                                    <h3 className="text-lg font-bold">{viewingCustomer.company || viewingCustomer.name}</h3>
                                     <div className="text-xs text-gray-300 flex items-center gap-1.5 mt-0.5">
-                                        <Building2 className="w-3.5 h-3.5 text-[#DA7A31]" />
-                                        <span>{viewingCustomer.company || 'Private Client Account'}</span>
+                                        <User className="w-3.5 h-3.5 text-[#DA7A31]" />
+                                        <span>Contact: {viewingCustomer.name}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Details Body */}
-                        <div className="p-6 space-y-4 text-xs">
+                        {/* Details */}
+                        <div className="p-6 space-y-4 text-xs text-gray-900">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                     <div className="text-gray-400 text-[10px] font-bold uppercase">Account Status</div>
                                     <span
                                         className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                                             viewingCustomer.status === 'active'
-                                                ? 'bg-emerald-100 text-emerald-800'
-                                                : 'bg-gray-200 text-gray-700'
+                                                ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                                                : 'bg-slate-200 text-slate-800 border border-slate-300'
                                         }`}
                                     >
                                         {viewingCustomer.status}
                                     </span>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                     <div className="text-gray-400 text-[10px] font-bold uppercase">Industry Sector</div>
                                     <div className="font-semibold text-[#0B1C30] mt-1">
                                         {viewingCustomer.industry || 'General IT'}
@@ -691,13 +916,13 @@ export default function Customers({ customers, filters }: CustomersProps) {
 
                             <div className="space-y-2 pt-2 border-t border-gray-100">
                                 <div className="flex items-center gap-2 text-gray-700">
-                                    <Mail className="w-4 h-4 text-[#DA7A31]" />
-                                    <span className="font-semibold">Email:</span>
+                                    <Mail className="w-4 h-4 text-[#DA7A31] shrink-0" />
+                                    <span className="font-semibold shrink-0">Email:</span>
                                     <span>{viewingCustomer.email || 'N/A'}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-700">
-                                    <Phone className="w-4 h-4 text-[#DA7A31]" />
-                                    <span className="font-semibold">Phone:</span>
+                                    <Phone className="w-4 h-4 text-[#DA7A31] shrink-0" />
+                                    <span className="font-semibold shrink-0">Phone:</span>
                                     <span>{viewingCustomer.phone || 'N/A'}</span>
                                 </div>
                                 <div className="flex items-start gap-2 text-gray-700">
@@ -710,7 +935,7 @@ export default function Customers({ customers, filters }: CustomersProps) {
                             {viewingCustomer.notes && (
                                 <div className="pt-2 border-t border-gray-100">
                                     <div className="font-bold text-[#0B1C30] mb-1">SLA Notes & Requirements</div>
-                                    <p className="p-3 bg-gray-50 rounded-xl text-gray-600 border border-gray-100">
+                                    <p className="p-3 bg-slate-50 rounded-xl text-gray-600 border border-slate-100">
                                         {viewingCustomer.notes}
                                     </p>
                                 </div>
@@ -723,14 +948,14 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                         setViewingCustomer(null);
                                         openEdit(c);
                                     }}
-                                    className="lmc-btn lmc-btn-outline-navy lmc-btn-sm"
+                                    className="px-4 py-2 text-xs font-bold text-[#0B1C30] bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-300 transition"
                                 >
-                                    <Edit2 className="w-3.5 h-3.5" />
+                                    <Edit2 className="w-3.5 h-3.5 inline mr-1.5" />
                                     <span>Edit Record</span>
                                 </button>
                                 <button
                                     onClick={() => setViewingCustomer(null)}
-                                    className="lmc-btn lmc-btn-navy lmc-btn-sm"
+                                    className="px-4 py-2 text-xs font-bold text-white bg-[#0B1C30] hover:bg-[#081423] rounded-xl transition"
                                 >
                                     Close Profile
                                 </button>
@@ -749,18 +974,18 @@ export default function Customers({ customers, filters }: CustomersProps) {
                         </div>
                         <h3 className="text-base font-bold text-[#0B1C30] mb-2">Delete Customer Account?</h3>
                         <p className="text-xs text-gray-500 mb-6">
-                            Are you sure you want to remove <span className="font-bold text-[#0B1C30]">{deletingCustomer.name}</span>? This action cannot be undone.
+                            Are you sure you want to remove <span className="font-bold text-[#0B1C30]">{deletingCustomer.company || deletingCustomer.name}</span>? This action cannot be undone.
                         </p>
                         <div className="flex items-center justify-center gap-3">
                             <button
                                 onClick={() => setDeletingCustomer(null)}
-                                className="lmc-btn lmc-btn-secondary lmc-btn-sm flex-1"
+                                className="px-4 py-2 text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl border border-gray-300 flex-1 transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                className="lmc-btn lmc-btn-danger lmc-btn-sm flex-1"
+                                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl flex-1 transition shadow-xs"
                             >
                                 Confirm Delete
                             </button>

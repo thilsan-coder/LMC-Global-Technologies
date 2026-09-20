@@ -467,7 +467,7 @@ class DatabaseSeeder extends Seeder
         // 7. Customers, Leads, FollowUps, Tasks (CRM)
         $customers = [
             [
-                'name' => 'Apex Global Logistics Ltd',
+                'name' => 'Duminda Bandara',
                 'company' => 'Apex Global Logistics Ltd',
                 'email' => 'contact@apexlogistics.lk',
                 'phone' => '+94 11 789 4400',
@@ -477,7 +477,7 @@ class DatabaseSeeder extends Seeder
                 'notes' => 'Long-term SLA agreement active for enterprise logistics software.',
             ],
             [
-                'name' => 'Horizon Healthcare International',
+                'name' => 'Michelle Gunaratne',
                 'company' => 'Horizon Healthcare International',
                 'email' => 'info@horizonhealth.com',
                 'phone' => '+94 11 258 9630',
@@ -487,19 +487,19 @@ class DatabaseSeeder extends Seeder
                 'notes' => 'Quarterly maintenance contract for EHR hospital management software.',
             ],
             [
-                'name' => 'SolarFleet Renewable Energy',
+                'name' => 'Pradeep Senanayake',
                 'company' => 'SolarFleet Renewable Energy',
                 'email' => 'partners@solarfleet.io',
                 'phone' => '+94 81 445 2200',
                 'address' => 'Technology Park, Kandy',
-                'industry' => 'CleanTech / IoT',
+                'industry' => 'CleanTech & IoT',
                 'status' => 'active',
                 'notes' => 'Cloud infrastructure contract on AWS with automated monitoring.',
             ],
         ];
 
         foreach ($customers as $c) {
-            Customer::updateOrCreate(['name' => $c['name']], $c);
+            Customer::updateOrCreate(['email' => $c['email']], $c);
         }
 
         $leads = [

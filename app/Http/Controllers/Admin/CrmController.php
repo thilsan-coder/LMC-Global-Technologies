@@ -44,7 +44,7 @@ class CrmController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:150',
-            'company' => 'nullable|string|max:150',
+            'company' => 'required|string|max:150',
             'email' => 'nullable|email|max:150',
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:255',
@@ -62,7 +62,7 @@ class CrmController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:150',
-            'company' => 'nullable|string|max:150',
+            'company' => 'required|string|max:150',
             'email' => 'nullable|email|max:150',
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:255',
