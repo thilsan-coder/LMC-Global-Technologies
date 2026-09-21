@@ -29,7 +29,7 @@ class UserController extends Controller
             $query->role($role);
         }
 
-        $users = $query->paginate(10)->withQueryString();
+        $users = $query->paginate(5)->withQueryString();
         $roles = Role::with('permissions')->get();
         $allPermissions = Permission::all();
 

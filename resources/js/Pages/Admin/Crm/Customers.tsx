@@ -26,6 +26,7 @@ import {
     ChevronDown,
     UploadCloud,
     FileText,
+    Check,
 } from 'lucide-react';
 
 interface CustomersProps {
@@ -55,6 +56,8 @@ const INDUSTRY_OPTIONS = [
     'Other Enterprise Sector',
 ];
 
+import CustomDropdown, { CustomDropdownOption } from '@/Components/CustomDropdown';
+
 export default function Customers({ customers, filters }: CustomersProps) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || '');
@@ -68,11 +71,18 @@ export default function Customers({ customers, filters }: CustomersProps) {
     // Active row action dropdown state (c.id or null)
     const [openActionId, setOpenActionId] = useState<number | null>(null);
 
-    // Form attachment drag-and-drop state inside Registration modal
-    const [attachedFile, setAttachedFile] = useState<File | null>(null);
-    const [attachedDragActive, setAttachedDragActive] = useState(false);
-
     const menuRef = useRef<HTMLDivElement>(null);
+
+    const STATUS_FILTER_OPTIONS: CustomDropdownOption[] = [
+        { value: '', label: 'All Account Statuses' },
+        { value: 'active', label: 'Active Retainer' },
+        { value: 'inactive', label: 'Inactive / On Hold' },
+    ];
+
+    const INDUSTRY_FILTER_OPTIONS: CustomDropdownOption[] = [
+        { value: '', label: 'All Industry Sectors' },
+        ...INDUSTRY_OPTIONS.map((ind) => ({ value: ind, label: ind })),
+    ];
 
     // Close action menu when clicking outside
     useEffect(() => {
@@ -117,7 +127,6 @@ export default function Customers({ customers, filters }: CustomersProps) {
 
     const openCreate = () => {
         setEditingCustomer(null);
-        setAttachedFile(null);
         clearErrors();
         reset();
         setData({
@@ -135,7 +144,6 @@ export default function Customers({ customers, filters }: CustomersProps) {
 
     const openEdit = (customer: CustomerItem) => {
         setEditingCustomer(customer);
-        setAttachedFile(null);
         clearErrors();
         setData({
             name: customer.name || '',
@@ -174,32 +182,6 @@ export default function Customers({ customers, filters }: CustomersProps) {
         router.delete(route('admin.crm.customers.destroy', deletingCustomer.id), {
             onSuccess: () => setDeletingCustomer(null),
         });
-    };
-
-    // Modal attachment drag-and-drop file handlers
-    const handleAttachedDrag = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setAttachedDragActive(true);
-        } else if (e.type === 'dragleave') {
-            setAttachedDragActive(false);
-        }
-    };
-
-    const handleAttachedDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setAttachedDragActive(false);
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setAttachedFile(e.dataTransfer.files[0]);
-        }
-    };
-
-    const handleAttachedFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setAttachedFile(e.target.files[0]);
-        }
     };
 
     return (
@@ -295,50 +277,35 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                 />
                             </div>
 
-                            {/* Status Filter Dropdown with Inset Chevron */}
-                            <div className="relative w-full sm:w-auto shrink-0">
-                                <select
-                                    value={statusFilter}
-                                    onChange={(e) => {
-                                        setStatusFilter(e.target.value);
-                                        router.get(
-                                            route('admin.crm.customers'),
-                                            { search: searchTerm, status: e.target.value, industry: industryFilter },
-                                            { preserveState: true }
-                                        );
-                                    }}
-                                    className="w-full sm:w-auto appearance-none text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] py-2.5 pl-3.5 pr-10 bg-white text-gray-900 cursor-pointer shadow-2xs"
-                                >
-                                    <option value="">All Account Statuses</option>
-                                    <option value="active">Active Retainer</option>
-                                    <option value="inactive">Inactive / On Hold</option>
-                                </select>
-                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none z-10" />
-                            </div>
+                            {/* Status Filter Dropdown */}
+                            <CustomDropdown
+                                value={statusFilter}
+                                onChange={(val) => {
+                                    setStatusFilter(val);
+                                    router.get(
+                                        route('admin.crm.customers'),
+                                        { search: searchTerm, status: val, industry: industryFilter },
+                                        { preserveState: true }
+                                    );
+                                }}
+                                options={STATUS_FILTER_OPTIONS}
+                                variant="navy"
+                            />
 
-                            {/* Industry Filter Dropdown with Inset Chevron */}
-                            <div className="relative w-full sm:w-auto shrink-0">
-                                <select
-                                    value={industryFilter}
-                                    onChange={(e) => {
-                                        setIndustryFilter(e.target.value);
-                                        router.get(
-                                            route('admin.crm.customers'),
-                                            { search: searchTerm, status: statusFilter, industry: e.target.value },
-                                            { preserveState: true }
-                                        );
-                                    }}
-                                    className="w-full sm:w-auto appearance-none text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] py-2.5 pl-3.5 pr-10 bg-white text-gray-900 cursor-pointer shadow-2xs"
-                                >
-                                    <option value="">All Industry Sectors</option>
-                                    {INDUSTRY_OPTIONS.map((ind) => (
-                                        <option key={ind} value={ind}>
-                                            {ind}
-                                        </option>
-                                    ))}
-                                </select>
-                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none z-10" />
-                            </div>
+                            {/* Industry Filter Dropdown */}
+                            <CustomDropdown
+                                value={industryFilter}
+                                onChange={(val) => {
+                                    setIndustryFilter(val);
+                                    router.get(
+                                        route('admin.crm.customers'),
+                                        { search: searchTerm, status: statusFilter, industry: val },
+                                        { preserveState: true }
+                                    );
+                                }}
+                                options={INDUSTRY_FILTER_OPTIONS}
+                                variant="navy"
+                            />
 
                             <button
                                 type="submit"
@@ -361,22 +328,22 @@ export default function Customers({ customers, filters }: CustomersProps) {
                 </div>
 
                 {/* 3. CLEAN CUSTOMER ACCOUNTS TABLE WITH UN-CLIPPED ACTIONS (⋮) DROPDOWN */}
-                <div className="bg-white rounded-xl border border-gray-200/80 shadow-2xs min-h-[420px] overflow-visible" ref={menuRef}>
-                    <div className="overflow-x-auto overflow-y-visible pb-16">
-                        <table className="w-full text-left text-xs text-[#4D4B55]">
+                <div className="bg-white rounded-xl border border-gray-200/80 shadow-2xs overflow-visible" ref={menuRef}>
+                    <div className="overflow-x-auto overflow-y-visible">
+                        <table className="w-full text-left text-xs text-[#4D4B55] table-fixed">
                             <thead className="bg-[#0B1C30] text-white font-bold uppercase tracking-wider text-[10px]">
                                 <tr>
-                                    <th className="py-3.5 px-5">Enterprise Client Account</th>
-                                    <th className="py-3.5 px-5">Contact Details</th>
-                                    <th className="py-3.5 px-5">Industry Sector</th>
-                                    <th className="py-3.5 px-5">SLA Status</th>
-                                    <th className="py-3.5 px-5 text-right">Actions</th>
+                                    <th className="py-3.5 px-5 w-[32%]">Enterprise Client Account</th>
+                                    <th className="py-3.5 px-5 w-[26%]">Contact Details</th>
+                                    <th className="py-3.5 px-5 w-[18%]">Industry Sector</th>
+                                    <th className="py-3.5 px-5 w-[14%]">SLA Status</th>
+                                    <th className="py-3.5 px-5 w-[10%] text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {customers.data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="py-12 text-center text-gray-500">
+                                        <td colSpan={5} className="h-[340px] text-center text-gray-500">
                                             <div className="max-w-xs mx-auto text-center space-y-2">
                                                 <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
                                                     <Users className="w-6 h-6" />
@@ -389,177 +356,181 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    customers.data.map((c, idx) => {
-                                        const companyTitle = c.company || c.name;
-                                        const contactPerson = c.name;
-                                        const isMenuOpen = openActionId === c.id;
-                                        // Open upward for bottom rows so menu is NEVER clipped by table bottom
-                                        const openUpward = idx >= customers.data.length - 1 || idx >= 2;
+                                    <>
+                                        {customers.data.map((c, idx) => {
+                                            const companyTitle = c.company || c.name;
+                                            const contactPerson = c.name;
+                                            const isMenuOpen = openActionId === c.id;
+                                            // Open upward for bottom rows so menu is NEVER clipped by table bottom
+                                            const openUpward = idx >= customers.data.length - 1 || idx >= 2;
 
-                                        return (
-                                            <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
-                                                {/* Client Company Title & Contact Person Subtitle */}
-                                                <td className="py-4 px-5">
-                                                    <div className="flex items-start gap-3">
-                                                        <div className="w-9 h-9 rounded-lg bg-[#0B1C30] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs mt-0.5">
-                                                            {companyTitle.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <div
-                                                                className="font-bold text-[#0B1C30] text-sm hover:text-[#DA7A31] transition-colors cursor-pointer"
-                                                                onClick={() => setViewingCustomer(c)}
-                                                            >
-                                                                {companyTitle}
+                                            return (
+                                                <tr key={c.id} className="hover:bg-slate-50/80 transition-colors h-[68px]">
+                                                    {/* Client Company Title & Contact Person Subtitle */}
+                                                    <td className="py-3.5 px-5">
+                                                        <div className="flex items-start gap-3">
+                                                            <div className="w-9 h-9 rounded-lg bg-[#0B1C30] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs mt-0.5">
+                                                                {companyTitle.charAt(0)}
                                                             </div>
-                                                            <div className="text-[11px] text-gray-600 flex items-center gap-1.5 mt-0.5">
-                                                                <User className="w-3 h-3 text-[#DA7A31] shrink-0" />
-                                                                <span className="font-medium">Contact: {contactPerson}</span>
+                                                            <div className="min-w-0">
+                                                                <div
+                                                                    className="font-bold text-[#0B1C30] text-sm hover:text-[#DA7A31] transition-colors cursor-pointer truncate"
+                                                                    onClick={() => setViewingCustomer(c)}
+                                                                >
+                                                                    {companyTitle}
+                                                                </div>
+                                                                <div className="text-[11px] text-gray-600 flex items-center gap-1.5 mt-0.5 truncate">
+                                                                    <User className="w-3 h-3 text-[#DA7A31] shrink-0" />
+                                                                    <span className="font-medium truncate">Contact: {contactPerson}</span>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </td>
+                                                    </td>
 
-                                                {/* Email & Phone */}
-                                                <td className="py-4 px-5 space-y-1">
-                                                    {c.email ? (
-                                                        <div className="flex items-center gap-1.5 text-gray-700">
-                                                            <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                                                            <a href={`mailto:${c.email}`} className="hover:underline hover:text-[#DA7A31]">
-                                                                {c.email}
-                                                            </a>
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-gray-400 italic">No email provided</span>
-                                                    )}
-                                                    {c.phone && (
-                                                        <div className="flex items-center gap-1.5 text-gray-600 text-[11px]">
-                                                            <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                                                            <span>{c.phone}</span>
-                                                        </div>
-                                                    )}
-                                                </td>
-
-                                                {/* Industry */}
-                                                <td className="py-4 px-5">
-                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">
-                                                        <Layers className="w-3.5 h-3.5 mr-1.5 text-[#0B1C30]" />
-                                                        {c.industry || 'General IT'}
-                                                    </span>
-                                                </td>
-
-                                                {/* Status Badge */}
-                                                <td className="py-4 px-5">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                                                            c.status === 'active'
-                                                                ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                                                                : 'bg-slate-100 text-slate-800 border border-slate-300'
-                                                        }`}
-                                                    >
-                                                        <span
-                                                            className={`w-1.5 h-1.5 rounded-full ${
-                                                                c.status === 'active' ? 'bg-emerald-600 animate-pulse' : 'bg-slate-500'
-                                                            }`}
-                                                        />
-                                                        {c.status}
-                                                    </span>
-                                                </td>
-
-                                                {/* UN-CLIPPED ACTIONS (⋮) DROPDOWN MENU WITH EXACT VIEW / EDIT / DELETE LABELS */}
-                                                <td className="py-4 px-5 text-right relative">
-                                                    <div className="relative inline-block text-left">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setOpenActionId(isMenuOpen ? null : c.id)}
-                                                            className={`p-2 rounded-lg transition-colors border ${
-                                                                isMenuOpen
-                                                                    ? 'bg-[#0B1C30] text-white border-[#0B1C30]'
-                                                                    : 'text-gray-600 hover:text-[#0B1C30] hover:bg-gray-100 border-gray-200'
-                                                            }`}
-                                                            title="Customer Actions"
-                                                        >
-                                                            <MoreVertical className="w-4 h-4" />
-                                                        </button>
-
-                                                        {isMenuOpen && (
-                                                            <div
-                                                                className={`absolute right-0 w-36 bg-white rounded-xl shadow-2xl border border-gray-200 py-1.5 z-50 animate-fadeIn text-left font-normal ${
-                                                                    openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-                                                                }`}
-                                                            >
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setOpenActionId(null);
-                                                                        setViewingCustomer(c);
-                                                                    }}
-                                                                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-gray-700 hover:bg-slate-50 hover:text-[#0B1C30] transition font-medium"
-                                                                >
-                                                                    <Eye className="w-4 h-4 text-slate-500" />
-                                                                    <span>View</span>
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setOpenActionId(null);
-                                                                        openEdit(c);
-                                                                    }}
-                                                                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-amber-800 hover:bg-amber-50 hover:text-amber-900 transition font-medium"
-                                                                >
-                                                                    <Edit2 className="w-4 h-4 text-amber-600" />
-                                                                    <span>Edit</span>
-                                                                </button>
-                                                                <div className="my-1 border-t border-gray-100" />
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setOpenActionId(null);
-                                                                        setDeletingCustomer(c);
-                                                                    }}
-                                                                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-rose-700 hover:bg-rose-50 hover:text-rose-900 transition font-medium"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4 text-rose-600" />
-                                                                    <span>Delete</span>
-                                                                </button>
+                                                    {/* Email & Phone */}
+                                                    <td className="py-3.5 px-5 space-y-1">
+                                                        {c.email ? (
+                                                            <div className="flex items-center gap-1.5 text-gray-700 truncate">
+                                                                <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                                <a href={`mailto:${c.email}`} className="hover:underline hover:text-[#DA7A31] truncate">
+                                                                    {c.email}
+                                                                </a>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-gray-400 italic">No email provided</span>
+                                                        )}
+                                                        {c.phone && (
+                                                            <div className="flex items-center gap-1.5 text-gray-600 text-[11px] truncate">
+                                                                <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                                <span className="truncate">{c.phone}</span>
                                                             </div>
                                                         )}
-                                                    </div>
-                                                </td>
+                                                    </td>
+
+                                                    {/* Industry */}
+                                                    <td className="py-3.5 px-5">
+                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200 truncate max-w-full">
+                                                            <Layers className="w-3.5 h-3.5 mr-1.5 text-[#0B1C30] shrink-0" />
+                                                            <span className="truncate">{c.industry || 'General IT'}</span>
+                                                        </span>
+                                                    </td>
+
+                                                    {/* Status Badge */}
+                                                    <td className="py-3.5 px-5">
+                                                        <span
+                                                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${c.status === 'active'
+                                                                ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                                                                : 'bg-slate-100 text-slate-800 border border-slate-300'
+                                                                }`}
+                                                        >
+                                                            <span
+                                                                className={`w-1.5 h-1.5 rounded-full ${c.status === 'active' ? 'bg-emerald-600 animate-pulse' : 'bg-slate-500'
+                                                                    }`}
+                                                            />
+                                                            {c.status}
+                                                        </span>
+                                                    </td>
+
+                                                    {/* UN-CLIPPED ACTIONS (⋮) DROPDOWN MENU WITH EXACT VIEW / EDIT / DELETE LABELS */}
+                                                    <td className="py-3.5 px-5 text-right relative">
+                                                        <div className="relative inline-block text-left">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setOpenActionId(isMenuOpen ? null : c.id)}
+                                                                className={`p-2 rounded-lg transition-colors border ${isMenuOpen
+                                                                    ? 'bg-[#0B1C30] text-white border-[#0B1C30]'
+                                                                    : 'text-gray-600 hover:text-[#0B1C30] hover:bg-gray-100 border-gray-200'
+                                                                    }`}
+                                                                title="Customer Actions"
+                                                            >
+                                                                <MoreVertical className="w-4 h-4" />
+                                                            </button>
+
+                                                            {isMenuOpen && (
+                                                                <div
+                                                                    className={`absolute right-0 w-36 bg-white rounded-xl shadow-2xl border border-gray-200 py-1.5 z-50 animate-fadeIn text-left font-normal ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                                                        }`}
+                                                                >
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setOpenActionId(null);
+                                                                            setViewingCustomer(c);
+                                                                        }}
+                                                                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-gray-700 hover:bg-slate-50 hover:text-[#0B1C30] transition font-medium"
+                                                                    >
+                                                                        <Eye className="w-4 h-4 text-slate-500" />
+                                                                        <span>View</span>
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setOpenActionId(null);
+                                                                            openEdit(c);
+                                                                        }}
+                                                                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-amber-800 hover:bg-amber-50 hover:text-amber-900 transition font-medium"
+                                                                    >
+                                                                        <Edit2 className="w-4 h-4 text-amber-600" />
+                                                                        <span>Edit</span>
+                                                                    </button>
+                                                                    <div className="my-1 border-t border-gray-100" />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setOpenActionId(null);
+                                                                            setDeletingCustomer(c);
+                                                                        }}
+                                                                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-rose-700 hover:bg-rose-50 hover:text-rose-900 transition font-medium"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4 text-rose-600" />
+                                                                        <span>Delete</span>
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        {Array.from({ length: Math.max(0, 5 - customers.data.length) }).map((_, i) => (
+                                            <tr key={`empty-${i}`} className="h-[68px]">
+                                                <td colSpan={5} className="py-3.5 px-5">&nbsp;</td>
                                             </tr>
-                                        );
-                                    })
+                                        ))}
+                                    </>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
                     {/* Pagination Footer */}
-                    {customers.links && customers.links.length > 3 && (
-                        <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-600">
-                            <div>
-                                Showing <span className="font-semibold text-[#0B1C30]">{customers.from || 1}</span> to{' '}
-                                <span className="font-semibold text-[#0B1C30]">{customers.to || customers.data.length}</span> of{' '}
-                                <span className="font-semibold text-[#0B1C30]">{customers.total}</span> enterprise accounts
-                            </div>
+                    <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-600">
+                        <div>
+                            Showing <span className="font-semibold text-[#0B1C30]">{customers.from || (customers.total > 0 ? 1 : 0)}</span> to{' '}
+                            <span className="font-semibold text-[#0B1C30]">{customers.to || customers.data.length}</span> of{' '}
+                            <span className="font-semibold text-[#0B1C30]">{customers.total}</span> enterprise accounts
+                        </div>
+                        {customers.links && customers.links.length > 0 && (
                             <div className="flex flex-wrap gap-1">
-                                {customers.links.map((link, idx) => (
+                                {customers.links
+                                    .filter((link) => link.active || link.label.includes('Previous') || link.label.includes('&laquo;') || link.label.includes('Next') || link.label.includes('&raquo;'))
+                                    .map((link, idx) => (
                                     <button
                                         key={idx}
-                                        onClick={() => link.url && router.get(link.url)}
+                                        onClick={() => link.url && router.get(link.url, {}, { preserveScroll: true, preserveState: true })}
                                         disabled={!link.url}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
-                                        className={`px-3 py-1.5 rounded-md text-xs transition-all ${
-                                            link.active
-                                                ? 'bg-[#0B1C30] text-white font-bold shadow-2xs'
-                                                : link.url
+                                        className={`px-3 py-1.5 rounded-md text-xs transition-all ${link.active
+                                            ? 'bg-[#0B1C30] text-white font-bold shadow-2xs'
+                                            : link.url
                                                 ? 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
                                                 : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                                        }`}
+                                            }`}
                                     />
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -621,27 +592,19 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                             {errors.company && <p className="text-red-500 text-[11px] mt-1">{errors.company}</p>}
                                         </div>
 
-                                        {/* Industry Sector Dropdown with Zero Icon Overlap & Inset Chevron */}
+                                        {/* Industry Sector Dropdown */}
                                         <div>
                                             <label className="block font-semibold text-[#0B1C30] mb-1">
                                                 Industry Sector <span className="text-red-500">*</span>
                                             </label>
-                                            <div className="relative">
-                                                <Layers className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none z-10" />
-                                                <select
-                                                    value={data.industry}
-                                                    onChange={(e) => setData('industry', e.target.value)}
-                                                    required
-                                                    className="w-full appearance-none pl-10 pr-10 py-2.5 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 cursor-pointer shadow-2xs"
-                                                >
-                                                    {INDUSTRY_OPTIONS.map((opt) => (
-                                                        <option key={opt} value={opt}>
-                                                            {opt}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none z-10" />
-                                            </div>
+                                            <CustomDropdown
+                                                value={data.industry}
+                                                onChange={(val) => setData('industry', val)}
+                                                options={INDUSTRY_OPTIONS.map((opt) => ({ value: opt, label: opt }))}
+                                                variant="white"
+                                                icon={Layers}
+                                                className="w-full"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -727,28 +690,28 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                     </div>
                                 </div>
 
-                                {/* SECTION 3: SLA & ACCOUNT STATUS WITH PROFESSIONAL DRAG & DROP ATTACHMENT AREA */}
+                                {/* SECTION 3: SLA STATUS & ACCOUNT NOTES */}
                                 <div className="pt-4 border-t border-gray-100 space-y-4">
                                     <div className="text-[11px] font-bold text-[#DA7A31] uppercase tracking-wider mb-1 flex items-center gap-2">
                                         <ShieldCheck className="w-4 h-4" />
                                         <span>3. SLA Status & Account Notes</span>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="relative">
+                                        <div>
                                             <label className="block font-semibold text-[#0B1C30] mb-1">
                                                 Account Status <span className="text-red-500">*</span>
                                             </label>
-                                            <div className="relative">
-                                                <select
-                                                    value={data.status}
-                                                    onChange={(e) => setData('status', e.target.value as 'active' | 'inactive')}
-                                                    className="w-full appearance-none py-2.5 pl-3.5 pr-10 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 cursor-pointer shadow-2xs"
-                                                >
-                                                    <option value="active">Active Retainer</option>
-                                                    <option value="inactive">Inactive / On Hold</option>
-                                                </select>
-                                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none z-10" />
-                                            </div>
+                                            <CustomDropdown
+                                                value={data.status}
+                                                onChange={(val) => setData('status', val as 'active' | 'inactive')}
+                                                options={[
+                                                    { value: 'active', label: 'Active Retainer' },
+                                                    { value: 'inactive', label: 'Inactive / On Hold' },
+                                                ]}
+                                                variant="white"
+                                                icon={ShieldCheck}
+                                                className="w-full"
+                                            />
                                         </div>
 
                                         <div className="md:col-span-2">
@@ -756,81 +719,12 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                                 SLA Deliverables & Account Notes
                                             </label>
                                             <textarea
-                                                rows={2}
+                                                rows={3}
                                                 value={data.notes}
                                                 onChange={(e) => setData('notes', e.target.value)}
                                                 placeholder="e.g. Enterprise SLA agreement active covering cloud deployment and support."
                                                 className="w-full p-3 text-xs font-medium rounded-xl border border-gray-300 focus:border-[#DA7A31] focus:ring-1 focus:ring-[#DA7A31] bg-white text-gray-900 placeholder:text-gray-400 shadow-2xs"
                                             />
-                                        </div>
-
-                                        {/* Professional Drag-and-Drop Upload Section */}
-                                        <div className="md:col-span-2 pt-2">
-                                            <label className="block font-semibold text-[#0B1C30] mb-1">
-                                                Customer File Attachment (Optional)
-                                            </label>
-                                            <div
-                                                onDragEnter={handleAttachedDrag}
-                                                onDragLeave={handleAttachedDrag}
-                                                onDragOver={handleAttachedDrag}
-                                                onDrop={handleAttachedDrop}
-                                                className={`border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer ${
-                                                    attachedDragActive
-                                                        ? 'border-[#DA7A31] bg-orange-50/50 scale-[1.002]'
-                                                        : attachedFile
-                                                        ? 'border-emerald-300 bg-emerald-50/40'
-                                                        : 'border-gray-300 hover:border-[#DA7A31] bg-slate-50/60'
-                                                }`}
-                                            >
-                                                <input
-                                                    type="file"
-                                                    id="customerAttachmentInput"
-                                                    accept=".pdf, .doc, .docx"
-                                                    onChange={handleAttachedFileSelect}
-                                                    className="hidden"
-                                                />
-                                                <label htmlFor="customerAttachmentInput" className="cursor-pointer block">
-                                                    {attachedFile ? (
-                                                        <div className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-emerald-200 shadow-2xs">
-                                                            <div className="flex items-center gap-2.5">
-                                                                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                                                                    <FileText className="w-4 h-4" />
-                                                                </div>
-                                                                <div className="text-left">
-                                                                    <div className="text-xs font-bold text-gray-800">{attachedFile.name}</div>
-                                                                    <div className="text-[10px] text-gray-500">
-                                                                        {(attachedFile.size / 1024).toFixed(1)} KB — Attached
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setAttachedFile(null);
-                                                                }}
-                                                                className="text-xs text-red-600 hover:underline font-semibold"
-                                                            >
-                                                                Remove File
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center justify-center gap-3 py-1">
-                                                            <div className="w-9 h-9 rounded-lg bg-[#DA7A31]/10 text-[#DA7A31] flex items-center justify-center shrink-0 border border-[#DA7A31]/20">
-                                                                <UploadCloud className="w-4 h-4" />
-                                                            </div>
-                                                            <div className="text-left">
-                                                                <div className="text-xs font-bold text-[#0B1C30]">
-                                                                    Drag & drop document file here, or <span className="text-[#DA7A31] underline font-semibold">browse files</span>
-                                                                </div>
-                                                                <div className="text-[10px] text-gray-500">
-                                                                    PDF or DOCX up to 5MB
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </label>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -855,8 +749,8 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                         {processing
                                             ? 'Saving Account...'
                                             : editingCustomer
-                                            ? 'Update Customer Account'
-                                            : 'Save Customer Account'}
+                                                ? 'Update Customer Account'
+                                                : 'Save Customer Account'}
                                     </span>
                                 </button>
                             </div>
@@ -897,11 +791,10 @@ export default function Customers({ customers, filters }: CustomersProps) {
                                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                     <div className="text-gray-400 text-[10px] font-bold uppercase">Account Status</div>
                                     <span
-                                        className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                                            viewingCustomer.status === 'active'
-                                                ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                                                : 'bg-slate-200 text-slate-800 border border-slate-300'
-                                        }`}
+                                        className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${viewingCustomer.status === 'active'
+                                            ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                                            : 'bg-slate-200 text-slate-800 border border-slate-300'
+                                            }`}
                                     >
                                         {viewingCustomer.status}
                                     </span>

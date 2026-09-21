@@ -32,7 +32,7 @@ class CrmController extends Controller
             $query->where('status', $status);
         }
 
-        $customers = $query->latest()->paginate(10)->withQueryString();
+        $customers = $query->latest()->paginate(5)->withQueryString();
 
         return Inertia::render('Admin/Crm/Customers', [
             'customers' => $customers,
@@ -99,7 +99,7 @@ class CrmController extends Controller
             $query->where('status', $status);
         }
 
-        $leads = $query->latest()->paginate(10)->withQueryString();
+        $leads = $query->latest()->paginate(5)->withQueryString();
         $staffUsers = User::where('is_active', true)->select('id', 'name', 'email')->get();
 
         return Inertia::render('Admin/Crm/Leads', [
@@ -162,7 +162,7 @@ class CrmController extends Controller
             $query->where('status', $status);
         }
 
-        $followUps = $query->orderBy('follow_up_date')->paginate(12)->withQueryString();
+        $followUps = $query->orderBy('follow_up_date')->paginate(5)->withQueryString();
         $leads = Lead::select('id', 'name', 'company')->get();
         $customers = Customer::select('id', 'name', 'company')->get();
 
@@ -216,7 +216,7 @@ class CrmController extends Controller
             $query->where('priority', $priority);
         }
 
-        $tasks = $query->orderBy('due_date')->paginate(15)->withQueryString();
+        $tasks = $query->orderBy('due_date')->paginate(5)->withQueryString();
         $staffUsers = User::where('is_active', true)->select('id', 'name')->get();
 
         return Inertia::render('Admin/Crm/Tasks', [

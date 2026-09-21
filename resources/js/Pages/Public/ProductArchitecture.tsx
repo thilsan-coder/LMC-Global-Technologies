@@ -467,10 +467,10 @@ export default function ProductArchitecture({ product, allProducts }: ProductArc
                         </div>
                         <Link
                             href={route('public.products')}
-                            className="text-xs font-semibold text-[#DA7A31] hover:underline flex items-center gap-1.5"
+                            className="text-xs font-semibold text-[#DA7A31] hover:underline inline-flex items-center gap-1"
                         >
                             <span>View All 8 Platforms</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            <ArrowRight className="w-3 h-3" />
                         </Link>
                     </div>
 
@@ -490,9 +490,9 @@ export default function ProductArchitecture({ product, allProducts }: ProductArc
                                     <div className="text-sm font-bold text-white group-hover:text-[#DA7A31] transition-colors line-clamp-1">
                                         {other.name}
                                     </div>
-                                    <div className="mt-3 flex items-center justify-between text-xs text-gray-400 group-hover:text-white transition-colors">
+                                    <div className="mt-3 flex items-center justify-between text-xs font-semibold text-[#DA7A31] group-hover:underline">
                                         <span>View Architecture</span>
-                                        <ArrowRight className="w-3.5 h-3.5 text-[#DA7A31]" />
+                                        <ArrowRight className="w-3 h-3" />
                                     </div>
                                 </Link>
                             ))}

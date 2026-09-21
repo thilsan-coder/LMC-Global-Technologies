@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
 import {
     Clock,
@@ -9,6 +9,7 @@ import {
     Calendar,
     Award,
     Activity,
+    ArrowRight,
 } from 'lucide-react';
 
 interface VerifyAttendanceProps {
@@ -200,10 +201,17 @@ export default function VerifyAttendance({ searched, query: initialQuery, attend
                             <h2 className="text-lg font-extrabold text-red-400 uppercase tracking-wide mb-2">
                                 ✕ ATTENDANCE RECORD NOT FOUND
                             </h2>
-                            <p className="text-xs sm:text-sm text-gray-300 max-w-md mx-auto leading-relaxed">
+                            <p className="text-xs sm:text-sm text-gray-300 max-w-md mx-auto leading-relaxed mb-6">
                                 No attendance audit logs found matching "{searchTerm}". Please check the ID or contact
                                 the Directorate of Engineering Operations.
                             </p>
+                            <Link
+                                href={route('public.contact')}
+                                className="text-xs font-semibold text-[#DA7A31] hover:underline inline-flex items-center gap-1"
+                            >
+                                <span>Contact Verification Support</span>
+                                <ArrowRight className="w-3 h-3" />
+                            </Link>
                         </div>
                     )}
                 </div>

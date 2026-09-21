@@ -9,6 +9,7 @@ import {
     Send,
     ShieldCheck,
     ArrowLeft,
+    ArrowRight,
     ChevronDown,
     Check,
     Briefcase,
@@ -607,9 +608,9 @@ export default function SubmitReview({ metrics }: SubmitReviewProps) {
                                     <p className="text-xs text-gray-400 leading-relaxed mb-4">
                                         If you require technical assistance or wish to speak with our engineering management directly:
                                     </p>
-                                    <Link href={route('public.contact')} className="text-xs font-semibold text-[#DA7A31] hover:underline flex items-center gap-1">
+                                    <Link href={route('public.contact')} className="text-xs font-semibold text-[#DA7A31] hover:underline inline-flex items-center gap-1">
                                         <span>Contact Executive Desk</span>
-                                        <span>&rarr;</span>
+                                        <ArrowRight className="w-3 h-3" />
                                     </Link>
                                 </div>
                             </div>

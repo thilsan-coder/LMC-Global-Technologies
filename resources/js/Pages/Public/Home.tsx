@@ -175,7 +175,7 @@ export default function Home({ services, products, reviews, stats }: HomeProps) 
                                     </span>
                                     <Link
                                         href={route('public.verify-internship')}
-                                        className="text-[#DA7A31] hover:text-white font-semibold flex items-center gap-1 hover:underline transition-colors"
+                                        className="text-xs font-semibold text-[#DA7A31] hover:underline inline-flex items-center gap-1"
                                     >
                                         <span>Verify ID</span>
                                         <ArrowRight className="w-3 h-3" />

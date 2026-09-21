@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
 import {
     ShieldCheck,
@@ -12,6 +12,7 @@ import {
     GraduationCap,
     Building2,
     Award,
+    ArrowRight,
 } from 'lucide-react';
 
 interface VerifyInternshipProps {
@@ -241,12 +242,13 @@ export default function VerifyInternship({ searched, query: initialQuery, intern
                                 No internship record matches the provided identifier "{searchTerm}". Please double-check
                                 the ID formatting or contact LMC verification administration.
                             </p>
-                            <a
+                            <Link
                                 href={route('public.contact')}
-                                className="text-xs font-semibold text-[#DA7A31] hover:underline"
+                                className="text-xs font-semibold text-[#DA7A31] hover:underline inline-flex items-center gap-1"
                             >
-                                Contact Verification Support &rarr;
-                            </a>
+                                <span>Contact Verification Support</span>
+                                <ArrowRight className="w-3 h-3" />
+                            </Link>
                         </div>
                     )}
                 </div>

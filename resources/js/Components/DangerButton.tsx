@@ -9,7 +9,7 @@ export default function DangerButton({
     return (
         <button
             {...props}
-            className={`lmc-btn lmc-btn-danger ${className}`}
+            className={`lmc-btn lmc-btn-danger h-[42px] py-0 px-4 text-xs font-semibold rounded-xl inline-flex items-center justify-center gap-2 ${className}`}
             disabled={disabled}
         >
             {children}

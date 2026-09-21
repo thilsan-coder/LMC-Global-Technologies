@@ -370,10 +370,10 @@ export default function ServiceDetail({ service, allServices }: ServiceDetailPro
                         </div>
                         <Link
                             href={route('public.services')}
-                            className="text-xs font-semibold text-[#DA7A31] hover:underline flex items-center gap-1.5"
+                            className="text-xs font-semibold text-[#DA7A31] hover:underline inline-flex items-center gap-1"
                         >
                             <span>View All Services</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            <ArrowRight className="w-3 h-3" />
                         </Link>
                     </div>
 
@@ -394,9 +394,9 @@ export default function ServiceDetail({ service, allServices }: ServiceDetailPro
                                             <div className="text-sm font-bold text-white group-hover:text-[#DA7A31] transition-colors truncate">
                                                 {other.name}
                                             </div>
-                                            <div className="text-xs text-gray-400 group-hover:text-white transition-colors flex items-center gap-1 mt-0.5">
+                                            <div className="text-xs font-semibold text-[#DA7A31] group-hover:underline inline-flex items-center gap-1 mt-0.5">
                                                 <span>View Full Scope</span>
-                                                <ArrowRight className="w-3 h-3 text-[#DA7A31]" />
+                                                <ArrowRight className="w-3 h-3" />
                                             </div>
                                         </div>
                                     </div>

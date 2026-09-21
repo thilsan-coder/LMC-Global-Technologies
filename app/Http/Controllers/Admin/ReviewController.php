@@ -26,7 +26,7 @@ class ReviewController extends Controller
             $query->where('status', $status);
         }
 
-        $reviews = $query->latest()->paginate(10)->withQueryString();
+        $reviews = $query->latest()->paginate(5)->withQueryString();
 
         $counts = [
             'all' => Review::count(),

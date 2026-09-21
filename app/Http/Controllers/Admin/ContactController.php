@@ -27,7 +27,7 @@ class ContactController extends Controller
             $query->where('status', $status);
         }
 
-        $messages = $query->latest()->paginate(10)->withQueryString();
+        $messages = $query->latest()->paginate(5)->withQueryString();
 
         $unreadCount = ContactMessage::where('status', 'Unread')->count();
 

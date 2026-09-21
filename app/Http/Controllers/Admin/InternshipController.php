@@ -36,7 +36,7 @@ class InternshipController extends Controller
             $query->where('verification_status', $verification);
         }
 
-        $interns = $query->latest()->paginate(10)->withQueryString();
+        $interns = $query->latest()->paginate(5)->withQueryString();
 
         return Inertia::render('Admin/Internships/Index', [
             'interns' => $interns,
@@ -125,7 +125,7 @@ class InternshipController extends Controller
             $query->where('status', $status);
         }
 
-        $attendances = $query->latest('date')->paginate(15)->withQueryString();
+        $attendances = $query->latest('date')->paginate(5)->withQueryString();
         $interns = Intern::select('id', 'intern_id', 'name', 'department')->get();
 
         return Inertia::render('Admin/Internships/Attendance', [

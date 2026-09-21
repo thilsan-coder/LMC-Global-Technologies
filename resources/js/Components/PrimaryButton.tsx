@@ -9,7 +9,7 @@ export default function PrimaryButton({
     return (
         <button
             {...props}
-            className={`lmc-btn lmc-btn-primary ${className}`}
+            className={`lmc-btn lmc-btn-primary h-[42px] py-0 px-4 text-xs font-semibold rounded-xl inline-flex items-center justify-center gap-2 shadow-2xs ${className}`}
             disabled={disabled}
         >
             {children}
